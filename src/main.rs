@@ -3,7 +3,7 @@ mod config;
 mod fstab;
 mod status;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use status::{AppError, AppMessage, AppResult};
 use std::fs;
 
@@ -18,7 +18,9 @@ fn main() -> Result<()> {
             Ok(())
         }
         None => {
-            greet_user().context("Failed to greet user")?;
+            greet_user()?;
+            println!("Ha you don`t read this");
+
             Ok(())
         }
     }
@@ -29,18 +31,24 @@ fn greet_user() -> AppResult<()> {
 
     let path = config_dir.join("abyss/snaps/greet.txt");
     let path_string = path.display().to_string();
+
     let content = fs::read_to_string(&path).map_err(|e| {
         if e.kind() == std::io::ErrorKind::NotFound {
-            AppError::GreetFileNotFound(path.display().to_string())
+            let msg = AppError::GreetFileNotFound(path_string.clone());
+            println!("{}", serde_json::to_string(&msg).unwrap());
+            msg
         } else {
-            AppError::ReadGreetError(format!("{}: {}", path.display(), e))
+            let msg = AppError::ReadGreetError(format!("{}: {}", path.display(), e));
+            println!("{}", serde_json::to_string(&msg).unwrap());
+            msg
         }
     })?;
 
-    println!("{}", content);
-
     let msg = AppMessage::GreetShown(path_string);
-    let line = serde_json::to_string(&msg).unwrap();
+    let line = serde_json::to_string(&msg).unwrap(); // UNWRAP: never fails.
+
+    println!("{content}");
     println!("{line}");
+
     Ok(())
 }
