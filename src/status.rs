@@ -4,6 +4,9 @@ use thiserror::Error;
 #[derive(Error, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum AppError {
+    #[error("Config directory not found")]
+    ConfigDirNotFound,
+
     #[error("Failed to read greet file: {0}")]
     ReadGreetError(String),
 
@@ -16,3 +19,5 @@ pub enum AppError {
 pub enum AppMessage {
     GreetShown(String),
 }
+
+pub type AppResult<T> = std::result::Result<T, AppError>;

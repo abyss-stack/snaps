@@ -2,41 +2,45 @@ mod cli;
 mod config;
 mod fstab;
 mod status;
-use status::{AppError, AppMessage};
+
+use anyhow::{Context, Result};
+use status::{AppError, AppMessage, AppResult};
 use std::fs;
 
 use crate::cli::{Cli, Commands};
 
-fn main() {
+fn main() -> Result<()> {
     let cli = Cli::parse_args();
 
     match &cli.command {
         Some(Commands::Run) => {
             println!("Running snapshot process...");
+            Ok(())
         }
         None => {
-            greet_user();
+            greet_user().context("Failed to greet user")?;
+            Ok(())
         }
     }
 }
 
-fn greet_user() {
-    let path = dirs::config_dir()
-        .map(|d| d.join("abyss/snaps/greet.txt"))
-        .filter(|p| p.exists());
+fn greet_user() -> AppResult<()> {
+    let config_dir = dirs::config_dir().ok_or(AppError::ConfigDirNotFound)?;
 
-    if let Some(valid_path) = path {
-        // 1. Read and print the file content directly to stdout
-        let content =
-            fs::read_to_string(&valid_path).unwrap_or_else(|_| String::from("error reading file"));
-        println!("{}", content);
+    let path = config_dir.join("abyss/snaps/greet.txt");
+    let path_string = path.display().to_string();
+    let content = fs::read_to_string(&path).map_err(|e| {
+        if e.kind() == std::io::ErrorKind::NotFound {
+            AppError::GreetFileNotFound(path.display().to_string())
+        } else {
+            AppError::ReadGreetError(format!("{}: {}", path.display(), e))
+        }
+    })?;
 
-        // 2. Convert the PathBuf path into a String safely for your enum
-        let path_string = valid_path.display().to_string();
-        let msg = AppMessage::GreetShown(path_string);
+    println!("{}", content);
 
-        // 3. Directly serialize the enum and print the JSON line
-        let line = serde_json::to_string(&msg).unwrap();
-        println!("{line}");
-    }
+    let msg = AppMessage::GreetShown(path_string);
+    let line = serde_json::to_string(&msg).unwrap();
+    println!("{line}");
+    Ok(())
 }
