@@ -3,6 +3,9 @@ use clap::{Parser, Subcommand};
 #[derive(Parser)]
 #[command(version = env!("CARGO_PKG_VERSION"))]
 pub struct Cli {
+    #[arg(short, long, global = true)]
+    pub pretty: bool,
+
     #[command(subcommand)]
     pub command: Option<Commands>,
 }
