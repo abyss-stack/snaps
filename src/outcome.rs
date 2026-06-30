@@ -54,7 +54,9 @@ AppMessage is a json-native part of output.
 */
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum AppMessage {}
+pub enum AppMessage {
+    HashGenerated(String),
+}
 
 /*
 AppResult is the only result functions should return.
