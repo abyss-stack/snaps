@@ -17,6 +17,8 @@ pub enum AppError {
     InternalHashError,
     #[error("Could not open snaps dir: '{0}'.")]
     SnapsDirOpenFailed(String),
+    #[error("Hash collision for: '{0}'.")]
+    HashCollision(String),
 }
 
 /*
