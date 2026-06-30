@@ -12,6 +12,7 @@ pub struct FstabEntry {
     pub dump: u8,
     pub pass: u8,
     pub is_state: bool,
+    pub is_root: bool,
 }
 
 pub type FstabConfig = Vec<FstabEntry>;

@@ -36,22 +36,22 @@ pub fn create_snap(
         return Err(HashCollision(String::from(hash_str)));
     }
 
-    let mut source_dirs: Vec<(String, CString, File)> = Vec::with_capacity(targets.len());
+    let mut source_dirs: Vec<(CString, File)> = Vec::with_capacity(targets.len());
     for (mountpoint, name) in &targets {
         let file = File::open(mountpoint).map_err(|_| SourceDirOpenFailed(name.clone()))?;
         let c_name = CString::new(name.clone()).map_err(|_| CStringConvertError(name.clone()))?;
-        source_dirs.push((mountpoint.clone(), c_name, file));
+        source_dirs.push((c_name, file));
     }
 
     let snap_dir_path = Path::new(snaps_root).join(hash_str);
     std::fs::create_dir(&snap_dir_path).map_err(|_| HashDirCreateFailed(hash_str.to_string()))?;
 
-    for (mountpoint, c_name, file) in source_dirs {
+    for (c_name, file) in source_dirs {
         btrfs_uapi::subvolume::snapshot_create(
             parent_dir.as_fd(),
             file.as_fd(),
             &c_name,
-            mountpoint != "/",
+            true, // INTENTIONAL: checking is_root here will turn the code to a mess.
             &[],
         )
         .map_err(|_| KernelIoctlFailure)?;
