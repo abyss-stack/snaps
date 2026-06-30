@@ -25,7 +25,10 @@ fn main() -> ExitCode {
             Ok(()) => ExitCode::SUCCESS,
             Err(_) => ExitCode::FAILURE,
         },
-        None => ExitCode::SUCCESS,
+        None => {
+            println!("{}", greet_user());
+            ExitCode::SUCCESS
+        }
     }
 }
 
@@ -39,4 +42,24 @@ fn run_inner(ctx: &AppContext) -> AppResult<()> {
     ctx.emit_message(&HashGenerated(hash_string.clone()))?;
 
     Ok(())
+}
+
+fn greet_user() -> &'static str {
+    r#"
+  ____  ____   __ __  _____ _____        _____ ____    ____  ____    _____
+ /    ||    \ |  |  |/ ___// ___/       / ___/|    \  /    ||    \  / ___/
+|  o  ||  o  )|  |  (   \_(   \_  _____(   \_ |  _  ||  o  ||  o  )(   \_
+|     ||     ||  ~  |\__  |\__  ||     |\__  ||  |  ||     ||   _/  \__  |
+|  _  ||  O  ||___, |/  \ |/  \ ||_____|/  \ ||  |  ||  _  ||  |    /  \ |
+|  |  ||     ||     |\    |\    |       \    ||  |  ||  |  ||  |    \    |
+|__|__||_____||____/  \___| \___|        \___||__|__||__|__||__|     \___|
+
+Part of abyss-stack tools: a state machine for Btrfs subvolumes (Static/Dynamic).
+It implements a unique way to orchestrate your data, eliminating such common problems
+as "My /home is from the future!" or "I've rolled back my database!".
+
+You need to write your own rules in a config file, which is the single source of truth.
+Abyss-snaps has a very simple UX, thanks to its config-driven architecture.
+"#
+    .trim_start_matches('\n')
 }
