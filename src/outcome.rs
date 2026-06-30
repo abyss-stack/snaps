@@ -25,6 +25,8 @@ pub enum AppError {
     CStringConvertError(String),
     #[error("Could not create dir for: '{0}'.")]
     HashDirCreateFailed(String),
+    #[error("Kernel ioctl failure.")]
+    KernelIoctlFailure,
 }
 
 /*
