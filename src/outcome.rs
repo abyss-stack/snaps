@@ -17,8 +17,14 @@ pub enum AppError {
     InternalHashError,
     #[error("Could not open snaps dir: '{0}'.")]
     SnapsDirOpenFailed(String),
+    #[error("Could not open source dir: '{0}'.")]
+    SourceDirOpenFailed(String),
     #[error("Hash collision for: '{0}'.")]
     HashCollision(String),
+    #[error("Could not convert to CString: '{0}'.")]
+    CStringConvertError(String),
+    #[error("Could not create dir for: '{0}'.")]
+    HashDirCreateFailed(String),
 }
 
 /*
