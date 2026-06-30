@@ -31,6 +31,8 @@ pub enum AppError {
     BtrfsGetFlagsError(String),
     #[error("Could not set btrfs flags for: '{0}'.")]
     BtrfsSetFlagsError(String),
+    #[error("Could not toggle readonly flag")]
+    ReadOnlyToggleError,
 
     // INTENTIONAL: lazy way to wrap every error possible, still json-compatible
     #[error("General error: {0}")]

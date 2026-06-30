@@ -1,11 +1,12 @@
 use crate::outcome::AppError::{
     BtrfsGetFlagsError, BtrfsSetFlagsError, CStringConvertError, HashCollision,
-    HashDirCreateFailed, KernelIoctlFailure, SnapsDirOpenFailed, SourceDirOpenFailed,
+    HashDirCreateFailed, KernelIoctlFailure, ReadOnlyToggleError, SnapsDirOpenFailed,
+    SourceDirOpenFailed,
 };
 use crate::{config::FstabConfig, outcome::AppResult};
 use std::ffi::CString;
 use std::fs::File;
-use std::os::fd::AsFd;
+use std::os::fd::{AsFd, AsRawFd};
 use std::path::Path;
 
 pub fn create_snap(
@@ -76,5 +77,22 @@ pub fn set_subvolume_flags(fd: std::os::fd::RawFd, flags: u64) -> AppResult<()> 
         nix::ioctl_write_ptr!(btrfs_set_flags, btrfs_uapi::raw::BTRFS_IOCTL_MAGIC, 26, u64);
         btrfs_set_flags(fd, &flags).map_err(|e| BtrfsSetFlagsError(e.to_string()))?;
     }
+    Ok(())
+}
+
+pub fn set_readonly_flag(path: &Path, ro: bool) -> AppResult<()> {
+    let subvolume_dir = File::open(path).map_err(|_| ReadOnlyToggleError)?;
+
+    let mut flags =
+        get_subvolume_flags(subvolume_dir.as_raw_fd()).map_err(|_| ReadOnlyToggleError)?;
+
+    if ro {
+        flags |= btrfs_uapi::raw::BTRFS_SUBVOL_RDONLY as u64;
+    } else {
+        flags &= !(btrfs_uapi::raw::BTRFS_SUBVOL_RDONLY as u64);
+    }
+
+    set_subvolume_flags(subvolume_dir.as_raw_fd(), flags).map_err(|_| ReadOnlyToggleError)?;
+
     Ok(())
 }
