@@ -1,5 +1,5 @@
 use crate::outcome::AppError::{
-    CStringConvertError, HashCollision, HashDirCreateFailed, KernelIoctlFailure,
+    CStringConvertError, GeneralError, HashCollision, HashDirCreateFailed, KernelIoctlFailure,
     SnapsDirOpenFailed, SourceDirOpenFailed,
 };
 use crate::{config::FstabConfig, outcome::AppResult};
@@ -60,4 +60,14 @@ pub fn create_snap(
     Ok(targets)
 }
 
-//fn get_subvolume_flags(fd: std::os::fs::RawFd) ->
+pub fn get_subvolume_flags(fd: std::os::fd::RawFd) -> AppResult<u64> {
+    let mut flags: u64 = 0;
+    // UNSAFE: low-level ioctl to get subvolume flags.
+    // The kernel API is stable; this is the only way to access this functionality.
+    unsafe {
+        nix::ioctl_read!(btrfs_get_flags, btrfs_uapi::raw::BTRFS_IOCTL_MAGIC, 25, u64);
+        btrfs_get_flags(fd, &mut flags)
+            .map_err(|e| GeneralError(format!("Failed to get subvolume flags: {}", e)))?;
+    }
+    Ok(flags)
+}
