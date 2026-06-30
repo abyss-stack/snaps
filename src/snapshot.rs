@@ -70,7 +70,7 @@ pub fn get_subvolume_flags(fd: std::os::fd::RawFd) -> AppResult<u64> {
     Ok(flags)
 }
 
-fn set_subvol_flags(fd: std::os::fd::RawFd, flags: u64) -> AppResult<()> {
+fn set_subvolume_flags(fd: std::os::fd::RawFd, flags: u64) -> AppResult<()> {
     // UNSAFE: low-level ioctl to set subvolume flags.
     unsafe {
         nix::ioctl_write_ptr!(btrfs_set_flags, btrfs_uapi::raw::BTRFS_IOCTL_MAGIC, 26, u64);
