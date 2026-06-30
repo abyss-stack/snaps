@@ -1,78 +1,37 @@
-mod cli;
+mod args;
+mod boot;
 mod config;
-mod fstab;
-mod status;
-use crate::cli::{Cli, Commands};
-use json_color::Colorizer;
-use status::{AppError, AppMessage, AppResult};
-use std::fs;
-use std::process::ExitCode;
+mod outcome;
+mod snapshot;
+use args::Args;
 
-pub struct AppContext {
-    pub pretty: bool,
-}
+use clap::Parser;
+use outcome::AppError::InternalHashError;
 
-impl AppContext {
-    pub fn new(cli: &Cli) -> Self {
-        Self { pretty: cli.pretty }
-    }
+use std::{
+    process::ExitCode,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
-    pub fn emit_message(&self, msg: &AppMessage) {
-        let output = if self.pretty {
-            let pretty_json = serde_json::to_string_pretty(msg).unwrap(); // UNWRAP: won`t fail
-            let colorizer = Colorizer::arbitrary();
-            colorizer.colorize_json_str(&pretty_json).unwrap() // UNWRAP: won`t fail
-        } else {
-            serde_json::to_string(msg).unwrap() // UNWRAP: won`t fail
-        };
-        println!("{}", output);
-    }
-}
+use crate::{args::Commands, outcome::AppResult};
 
 fn main() -> ExitCode {
-    let cli = Cli::parse_args();
-    let ctx = AppContext::new(&cli);
+    let arguments = Args::parse();
 
-    match run(&cli, &ctx) {
-        Ok(()) => ExitCode::SUCCESS,
-        Err(err) => {
-            eprintln!("{}", serde_json::to_string(&err).unwrap()); // UNWRAP: won`t fail
-            ExitCode::FAILURE
-        }
+    match arguments.command {
+        Some(Commands::Run) => match run_inner() {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(_) => ExitCode::FAILURE,
+        },
+        None => ExitCode::SUCCESS,
     }
 }
 
-fn run(cli: &Cli, ctx: &AppContext) -> AppResult<()> {
-    match &cli.command {
-        Some(Commands::Run) => {
-            println!("Running snapshot process...");
-            Ok(())
-        }
-        None => {
-            greet_user(ctx)?;
-            Ok(())
-        }
-    }
-}
-
-fn greet_user(ctx: &AppContext) -> AppResult<()> {
-    let config_dir = dirs::config_dir().ok_or(AppError::ConfigDirNotFound)?;
-    let path = config_dir.join("abyss/snaps/greet.txt");
-    let path_string = path.display().to_string();
-
-    let content = fs::read_to_string(&path).map_err(|e| {
-        if e.kind() == std::io::ErrorKind::NotFound {
-            AppError::GreetFileNotFound(path_string.clone())
-        } else {
-            AppError::ReadGreetError(format!("{}: {}", path_string, e))
-        }
-    })?;
-
-    if ctx.pretty {
-        println!("{content}");
-    }
-
-    ctx.emit_message(&AppMessage::GreetShown(path_string));
-
+fn run_inner() -> AppResult<()> {
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_err(|_| InternalHashError)?
+        .as_nanos();
+    let hash_string = format!("{:08x}", crc32fast::hash(&nanos.to_le_bytes()));
     Ok(())
 }

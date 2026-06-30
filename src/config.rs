@@ -1,6 +1,6 @@
-//use anyhow::Result;
+use crate::outcome::AppError::{ConfigReadError, JsonParseError};
+use crate::outcome::AppResult;
 use serde::Deserialize;
-//use std::path::Path;
 
 #[derive(Deserialize, Clone)]
 pub struct FstabEntry {
@@ -8,15 +8,18 @@ pub struct FstabEntry {
     pub mountpoint: String,
     pub fstype: String,
     pub options: Vec<String>,
-    pub subvol: Option<String>,
+    pub subvolume: Option<String>,
     pub dump: u8,
     pub pass: u8,
-    pub is_dynamic: bool,
+    pub is_state: bool,
 }
 
-/*
-pub fn load_config(path: AsRef<Path>) -> Result<Vec<FstabEntry>> {
-    let config_data = std::fs::read_to_string(path.as_ref())
-    .map_err(|_| );
+pub type FstabConfig = Vec<FstabEntry>;
+
+pub fn load_config(path: &str) -> AppResult<FstabConfig> {
+    let data = std::fs::read_to_string(path).map_err(|_| ConfigReadError(path.to_string()))?;
+
+    let config = serde_json::from_str(&data).map_err(|_| JsonParseError)?;
+
+    Ok(config)
 }
-*/
