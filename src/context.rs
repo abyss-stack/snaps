@@ -21,7 +21,7 @@ impl AppContext {
             let colorizer: Colorizer = Colorizer::arbitrary();
             colorizer
                 .colorize_json_str(&json)
-                .map_err(|_| AppError::ColorizeError)? // Use --raw in this fails.
+                .map_err(|_| AppError::ColorizeError)? // Use --raw if this fails.
         };
 
         writeln!(writer, "{}", payload).map_err(|e| IoError(e.to_string()))?;
