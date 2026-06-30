@@ -37,6 +37,8 @@ pub enum AppError {
     JsonError(String),
     #[error("Io error: '{0}'.")]
     IoError(String),
+    #[error("Could not colorize output.")]
+    ColorizeError,
 
     // INTENTIONAL: lazy way to wrap every error possible, still json-compatible
     #[error("General error: {0}")]

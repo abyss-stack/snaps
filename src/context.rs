@@ -1,8 +1,8 @@
-use crate::outcome::AppError::{IoError, JsonError};
+use crate::outcome::AppError::{ColorizeError, IoError, JsonError};
 use crate::outcome::{AppError, AppMessage, AppResult};
 use json_color::Colorizer;
 use serde::Serialize;
-use std::io::{self, Write};
+use std::io::Write;
 
 pub struct AppContext {
     pub raw: bool,
@@ -18,8 +18,10 @@ impl AppContext {
             serde_json::to_string(value).map_err(|e| JsonError(e.to_string()))?
         } else {
             let json = serde_json::to_string_pretty(value).map_err(|e| JsonError(e.to_string()))?;
-            let colorizer = Colorizer::default();
-            colorizer.colorize_json_str(&json).unwrap_or(json) // UNWRAP: uncolorized json as fallback.
+            let colorizer: Colorizer = Colorizer::arbitrary();
+            colorizer
+                .colorize_json_str(&json)
+                .map_err(|_| AppError::ColorizeError)? // Use --raw in this fails.
         };
 
         writeln!(writer, "{}", payload).map_err(|e| IoError(e.to_string()))?;
