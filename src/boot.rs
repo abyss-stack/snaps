@@ -1,4 +1,4 @@
-use crate::config::{FstabConfig, FstabEntry};
+use crate::config::Config;
 use crate::outcome::AppError::{FstabWriteError, InternalHashError};
 use crate::outcome::AppResult;
 use std::path::Path;
@@ -12,12 +12,12 @@ Rewrites the fstab to create an immutable snapshot or restore the snapshot.
 */
 pub fn modify_fstab(
     action: FstabAction,
-    config: &FstabConfig,
+    config: &Config,
     root_path: &Path,
     hash: Option<&str>,
 ) -> AppResult<()> {
     let mut content = String::from("# Generated automatically by abyss-snaps\n");
-    for entry in config {
+    for entry in &config.mounts {
         let mut options = entry.options.clone();
 
         match action {
@@ -25,7 +25,7 @@ pub fn modify_fstab(
                 if let Some(sv) = &entry.subvolume {
                     let hash_val = hash.ok_or_else(|| InternalHashError)?;
                     let payload = if entry.is_state {
-                        format!("subvol=/@abyss/snaps/{}/{}", hash_val, sv)
+                        format!("subvol={}/{}.{}", config.state.snaps_root, hash_val, sv)
                     } else {
                         format!("subvol={sv}")
                     };

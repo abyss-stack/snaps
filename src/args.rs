@@ -4,6 +4,10 @@ use clap::{Parser, Subcommand};
 pub enum Commands {
     Init,
     Run,
+    Rollback {
+        #[arg(short, long)]
+        hash: String,
+    },
 }
 
 #[derive(Parser)]

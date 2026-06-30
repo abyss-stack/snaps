@@ -3,6 +3,12 @@ use crate::outcome::AppResult;
 use serde::Deserialize;
 
 #[derive(Deserialize, Clone)]
+pub struct Config {
+    pub mounts: Vec<FstabEntry>,
+    pub state: StateConfig,
+}
+
+#[derive(Deserialize, Clone)]
 pub struct FstabEntry {
     pub device: String,
     pub mountpoint: String,
@@ -12,15 +18,16 @@ pub struct FstabEntry {
     pub dump: u8,
     pub pass: u8,
     pub is_state: bool,
-    pub is_root: bool,
 }
 
-pub type FstabConfig = Vec<FstabEntry>;
+#[derive(Deserialize, Clone)]
+pub struct StateConfig {
+    pub bootable_subvolume: String,
+    pub snaps_root: String,
+}
 
-pub fn load_config(path: &str) -> AppResult<FstabConfig> {
+pub fn load_config(path: &str) -> AppResult<Config> {
     let data = std::fs::read_to_string(path).map_err(|_| ConfigReadError(path.to_string()))?;
-
     let config = serde_json::from_str(&data).map_err(|_| JsonConfigParseError)?;
-
     Ok(config)
 }

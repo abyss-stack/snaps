@@ -47,6 +47,8 @@ pub enum AppError {
     RootEntryNotFound,
     #[error("No root subvolume.")]
     RootSubvolumeMissing,
+    #[error("Snapshot not found: '{0}'.")]
+    SnapshotNotFound(String),
 
     // INTENTIONAL: lazy way to wrap every error possible, still json-compatible
     #[error("General error: '{0}'.")]
@@ -71,6 +73,7 @@ pub enum AppMessage {
     GreetShown(String),
     SnapshotCreated { hash: String, description: String },
     FstabModified(String),
+    RollbackCompleted { hash: String },
 }
 
 /*
