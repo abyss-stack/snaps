@@ -1,6 +1,7 @@
 mod args;
 mod boot;
 mod config;
+mod context;
 mod outcome;
 mod snapshot;
 use args::Args;

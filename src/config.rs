@@ -1,4 +1,4 @@
-use crate::outcome::AppError::{ConfigReadError, JsonParseError};
+use crate::outcome::AppError::{ConfigReadError, JsonConfigParseError};
 use crate::outcome::AppResult;
 use serde::Deserialize;
 
@@ -20,7 +20,7 @@ pub type FstabConfig = Vec<FstabEntry>;
 pub fn load_config(path: &str) -> AppResult<FstabConfig> {
     let data = std::fs::read_to_string(path).map_err(|_| ConfigReadError(path.to_string()))?;
 
-    let config = serde_json::from_str(&data).map_err(|_| JsonParseError)?;
+    let config = serde_json::from_str(&data).map_err(|_| JsonConfigParseError)?;
 
     Ok(config)
 }

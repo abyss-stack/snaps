@@ -10,7 +10,7 @@ pub enum AppError {
     #[error("Could not read config from '{0}'.")]
     ConfigReadError(String),
     #[error("Unparsable json config.")]
-    JsonParseError,
+    JsonConfigParseError,
     #[error("Could not write fstab to '{0}'.")]
     FstabWriteError(String),
     #[error("Internal hash error")]
@@ -33,6 +33,10 @@ pub enum AppError {
     BtrfsSetFlagsError(String),
     #[error("Could not toggle readonly flag")]
     ReadOnlyToggleError,
+    #[error("Json error: '{0}'.")]
+    JsonError(String),
+    #[error("Io error: '{0}'.")]
+    IoError(String),
 
     // INTENTIONAL: lazy way to wrap every error possible, still json-compatible
     #[error("General error: {0}")]
