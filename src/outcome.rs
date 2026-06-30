@@ -62,6 +62,7 @@ pub enum AppMessage {
     HashGenerated(String),
     JsonConfigAlreadyExists(String),
     JsonConfigCreated(String),
+    GreetShown(String),
 }
 
 /*

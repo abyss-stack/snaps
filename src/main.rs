@@ -9,8 +9,11 @@ use clap::Parser;
 use context::AppContext;
 use outcome::AppError::{ConfigDirNotFound, InternalHashError, IoError};
 
-use crate::outcome::AppMessage::{HashGenerated, JsonConfigAlreadyExists, JsonConfigCreated};
+use crate::outcome::AppMessage::{
+    GreetShown, HashGenerated, JsonConfigAlreadyExists, JsonConfigCreated,
+};
 use crate::{args::Commands, outcome::AppResult};
+
 use std::fs;
 use std::{
     process::ExitCode,
@@ -34,12 +37,22 @@ fn main() -> ExitCode {
 
         Some(Commands::Run) => match run_inner(&ctx) {
             Ok(()) => ExitCode::SUCCESS,
-            Err(_) => ExitCode::FAILURE,
+            Err(e) => {
+                let _ = ctx
+                    .emit_error(&e)
+                    .expect("Run command failed, could not emit error.");
+                ExitCode::FAILURE
+            }
         },
-        None => {
-            println!("{}", greet_user());
-            ExitCode::SUCCESS
-        }
+        None => match greet_user(&ctx) {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(e) => {
+                let _ = ctx
+                    .emit_error(&e)
+                    .expect("Greet command failed, could not emit error.");
+                ExitCode::FAILURE
+            }
+        },
     }
 }
 
@@ -135,7 +148,7 @@ fn init_config(ctx: &AppContext) -> AppResult<()> {
                 e
             ))
         })?;
-        ctx.emit_message(&JsonConfigAlreadyExists(String::from(
+        ctx.emit_message(&JsonConfigCreated(String::from(
             "Json config created: '{config_dir}'.",
         )))?;
     }
@@ -143,8 +156,8 @@ fn init_config(ctx: &AppContext) -> AppResult<()> {
     Ok(())
 }
 
-fn greet_user() -> &'static str {
-    r#"
+fn greet_user(ctx: &AppContext) -> AppResult<()> {
+    let greet: &'static str = r#"
   ____  ____   __ __  _____ _____        _____ ____    ____  ____    _____
  /    ||    \ |  |  |/ ___// ___/       / ___/|    \  /    ||    \  / ___/
 |  o  ||  o  )|  |  (   \_(   \_  _____(   \_ |  _  ||  o  ||  o  )(   \_
@@ -160,5 +173,12 @@ as "My /home is from the future!" or "I've rolled back my database!".
 You need to write your own rules in a config file, which is the single source of truth.
 Abyss-snaps has a very simple UX, thanks to its config-driven architecture.
 "#
-    .trim_start_matches('\n')
+    .trim_start_matches('\n');
+
+    if ctx.raw {
+        ctx.emit_message(&GreetShown(format!("Shown greet, length: {}", greet.len())))?;
+    } else {
+        println!("{}", greet);
+    }
+    Ok(())
 }
