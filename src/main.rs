@@ -7,10 +7,11 @@ mod snapshot;
 use args::Args;
 use clap::Parser;
 use context::AppContext;
-use outcome::AppError::InternalHashError;
+use outcome::AppError::{ConfigDirNotFound, InternalHashError, IoError};
 
-use crate::outcome::AppMessage::HashGenerated;
+use crate::outcome::AppMessage::{HashGenerated, JsonConfigAlreadyExists, JsonConfigCreated};
 use crate::{args::Commands, outcome::AppResult};
+use std::fs;
 use std::{
     process::ExitCode,
     time::{SystemTime, UNIX_EPOCH},
@@ -21,6 +22,16 @@ fn main() -> ExitCode {
     let ctx = AppContext::from_args(arguments.raw);
 
     match arguments.command {
+        Some(Commands::Init) => match init_config(&ctx) {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(e) => {
+                let _ = ctx
+                    .emit_error(&e)
+                    .expect("Init command failed, could not emit error.");
+                ExitCode::FAILURE
+            }
+        },
+
         Some(Commands::Run) => match run_inner(&ctx) {
             Ok(()) => ExitCode::SUCCESS,
             Err(_) => ExitCode::FAILURE,
@@ -40,6 +51,94 @@ fn run_inner(ctx: &AppContext) -> AppResult<()> {
     let hash_string = format!("{:08x}", crc32fast::hash(&nanos.to_le_bytes()));
 
     ctx.emit_message(&HashGenerated(hash_string.clone()))?;
+
+    Ok(())
+}
+
+fn init_config(ctx: &AppContext) -> AppResult<()> {
+    let config: &'static str = r#"
+[
+  {
+    "device": "LABEL=ROOT_PART",
+    "mountpoint": "/",
+    "fstype": "btrfs",
+    "options": ["strictatime"],
+    "subvolume": "@",
+    "dump": 0,
+    "pass": 0,
+    "is_state": true,
+    "is_root": true,
+  },
+  {
+    "device": "LABEL=ROOT_PART",
+    "mountpoint": "/mnt/btrfs-root",
+    "fstype": "btrfs",
+    "options": ["strictatime", "subvolid=5"],
+    "subvolume": null,
+    "dump": 0,
+    "pass": 0,
+    "is_state": false,
+    "is_root": false,
+  },
+  {
+    "device": "LABEL=ROOT_PART",
+    "mountpoint": "/.abyss-snaps",
+    "fstype": "btrfs",
+    "options": ["strictatime"],
+    "subvolume": "@abyss-snaps",
+    "dump": 0,
+    "pass": 0,    
+    "is_state": false,
+    "is_root": false,
+  },
+  {
+    "device": "LABEL=ROOT_PART",
+    "mountpoint": "/home",
+    "fstype": "btrfs",
+    "options": ["strictatime"],
+    "subvolume": "@home",
+    "dump": 0,
+    "pass": 0,    
+    "is_state": true,
+    "is_root": false,
+  },
+  {
+    "device": "tmpfs",
+    "mountpoint": "/tmp",
+    "fstype": "tmpfs",
+    "options": ["defaults", "nosuid", "nodev"],
+    "subvolume": null,
+    "dump": 0,
+    "pass": 0,
+    "is_state": false,
+    "is_root": false,
+  }
+]
+"#
+    .trim_start_matches('\n');
+
+    let config_dir = dirs::config_dir()
+        .ok_or(ConfigDirNotFound)?
+        .join("abyss-snaps");
+    if config_dir.exists() {
+        ctx.emit_message(&JsonConfigAlreadyExists(String::from(
+            "Json config already exists: '{config_dir}'.",
+        )))?;
+    } else {
+        fs::create_dir_all(&config_dir).map_err(|e| IoError(e.to_string()))?;
+
+        let config_path = config_dir.join("config.json");
+        fs::write(&config_path, config).map_err(|e| {
+            IoError(format!(
+                "Failed to write config to {}: {}",
+                config_path.display(),
+                e
+            ))
+        })?;
+        ctx.emit_message(&JsonConfigAlreadyExists(String::from(
+            "Json config created: '{config_dir}'.",
+        )))?;
+    }
 
     Ok(())
 }

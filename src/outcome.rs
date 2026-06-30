@@ -7,6 +7,8 @@ AppError represents a fatal failure.
 #[derive(Error, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum AppError {
+    #[error("Config dir not found.")]
+    ConfigDirNotFound,
     #[error("Could not read config from '{0}'.")]
     ConfigReadError(String),
     #[error("Unparsable json config.")]
@@ -58,6 +60,8 @@ AppMessage is a json-native part of output.
 #[serde(rename_all = "snake_case")]
 pub enum AppMessage {
     HashGenerated(String),
+    JsonConfigAlreadyExists(String),
+    JsonConfigCreated(String),
 }
 
 /*
