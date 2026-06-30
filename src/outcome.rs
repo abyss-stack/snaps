@@ -1,6 +1,6 @@
+use anyhow::Error as AnyhowError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-
 /*
 AppError represents a fatal failure.
 */
@@ -27,6 +27,14 @@ pub enum AppError {
     HashDirCreateFailed(String),
     #[error("Kernel ioctl failure.")]
     KernelIoctlFailure,
+    #[error("General error: {0}")]
+    GeneralError(String),
+}
+
+impl From<AnyhowError> for AppError {
+    fn from(err: AnyhowError) -> Self {
+        AppError::GeneralError(err.to_string())
+    }
 }
 
 /*

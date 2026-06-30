@@ -6,6 +6,7 @@ version = 4
 name = "abyss-snaps"
 version = "0.2.0"
 dependencies = [
+ "anyhow",
  "bat",
  "btrfs-uapi",
  "clap",
