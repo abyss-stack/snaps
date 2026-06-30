@@ -27,6 +27,12 @@ pub enum AppError {
     HashDirCreateFailed(String),
     #[error("Kernel ioctl failure.")]
     KernelIoctlFailure,
+    #[error("Could not get btrfs flags for: '{0}'.")]
+    BtrfsGetFlagsError(String),
+    #[error("Could not set btrfs flags for: '{0}'.")]
+    BtrfsSetFlagsError(String),
+
+    // INTENTIONAL: lazy way to wrap every error possible, still json-compatible
     #[error("General error: {0}")]
     GeneralError(String),
 }

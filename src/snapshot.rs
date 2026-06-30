@@ -1,6 +1,6 @@
 use crate::outcome::AppError::{
-    CStringConvertError, GeneralError, HashCollision, HashDirCreateFailed, KernelIoctlFailure,
-    SnapsDirOpenFailed, SourceDirOpenFailed,
+    BtrfsGetFlagsError, BtrfsSetFlagsError, CStringConvertError, HashCollision,
+    HashDirCreateFailed, KernelIoctlFailure, SnapsDirOpenFailed, SourceDirOpenFailed,
 };
 use crate::{config::FstabConfig, outcome::AppResult};
 use std::ffi::CString;
@@ -65,8 +65,7 @@ pub fn get_subvolume_flags(fd: std::os::fd::RawFd) -> AppResult<u64> {
     // UNSAFE: low-level ioctl to get subvolume flags.
     unsafe {
         nix::ioctl_read!(btrfs_get_flags, btrfs_uapi::raw::BTRFS_IOCTL_MAGIC, 25, u64);
-        btrfs_get_flags(fd, &mut flags)
-            .map_err(|e| GeneralError(format!("Failed to get subvolume flags: {}", e)))?;
+        btrfs_get_flags(fd, &mut flags).map_err(|e| BtrfsGetFlagsError(e.to_string()))?;
     }
     Ok(flags)
 }
@@ -75,8 +74,7 @@ fn set_subvol_flags(fd: std::os::fd::RawFd, flags: u64) -> AppResult<()> {
     // UNSAFE: low-level ioctl to set subvolume flags.
     unsafe {
         nix::ioctl_write_ptr!(btrfs_set_flags, btrfs_uapi::raw::BTRFS_IOCTL_MAGIC, 26, u64);
-        btrfs_set_flags(fd, &flags)
-            .map_err(|e| GeneralError(format!("Failed to set subvolume flags: {}", e)))?;
+        btrfs_set_flags(fd, &flags).map_err(|e| BtrfsSetFlagsError(e.to_string()))?;
     }
     Ok(())
 }
