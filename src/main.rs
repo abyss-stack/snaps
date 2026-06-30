@@ -134,8 +134,9 @@ fn init_config(ctx: &AppContext) -> AppResult<()> {
         .ok_or(ConfigDirNotFound)?
         .join("abyss-snaps");
     if config_dir.exists() {
-        ctx.emit_message(&JsonConfigAlreadyExists(String::from(
-            "Json config already exists: '{config_dir}'.",
+        ctx.emit_message(&JsonConfigAlreadyExists(format!(
+            "Json config already exists: '{}'.",
+            config_dir.display(),
         )))?;
     } else {
         fs::create_dir_all(&config_dir).map_err(|e| IoError(e.to_string()))?;
@@ -143,13 +144,14 @@ fn init_config(ctx: &AppContext) -> AppResult<()> {
         let config_path = config_dir.join("config.json");
         fs::write(&config_path, config).map_err(|e| {
             IoError(format!(
-                "Failed to write config to {}: {}",
+                "Failed to write config to '{}': '{}'.",
                 config_path.display(),
                 e
             ))
         })?;
-        ctx.emit_message(&JsonConfigCreated(String::from(
-            "Json config created: '{config_dir}'.",
+        ctx.emit_message(&JsonConfigCreated(format!(
+            "JSON config created at: '{}'.",
+            config_dir.display()
         )))?;
     }
 
@@ -176,7 +178,7 @@ Abyss-snaps has a very simple UX, thanks to its config-driven architecture.
     .trim_start_matches('\n');
 
     if ctx.raw {
-        ctx.emit_message(&GreetShown(format!("Shown greet, length: {}", greet.len())))?;
+        ctx.emit_message(&GreetShown(format!("Length is: '{}'.", greet.len())))?;
     } else {
         println!("{}", greet);
     }
