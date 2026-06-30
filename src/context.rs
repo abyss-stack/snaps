@@ -13,7 +13,7 @@ impl AppContext {
         Self { raw }
     }
 
-    pub fn emit<T: Serialize>(&self, value: &T, writer: &mut dyn Write) -> AppResult<()> {
+    pub fn emit<T: Serialize, W: Write>(&self, value: &T, writer: &mut W) -> AppResult<()> {
         let payload = if self.raw {
             serde_json::to_string(value).map_err(|e| JsonError(e.to_string()))?
         } else {

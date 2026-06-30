@@ -15,8 +15,10 @@ pub enum AppError {
     JsonConfigParseError,
     #[error("Could not write fstab to '{0}'.")]
     FstabWriteError(String),
-    #[error("Internal hash error")]
+    #[error("Internal hash error.")]
     InternalHashError,
+    #[error("Internal path error.")]
+    InternalPathError,
     #[error("Could not open snaps dir: '{0}'.")]
     SnapsDirOpenFailed(String),
     #[error("Could not open source dir: '{0}'.")]
@@ -33,7 +35,7 @@ pub enum AppError {
     BtrfsGetFlagsError(String),
     #[error("Could not set btrfs flags for: '{0}'.")]
     BtrfsSetFlagsError(String),
-    #[error("Could not toggle readonly flag")]
+    #[error("Could not toggle readonly flag.")]
     ReadOnlyToggleError,
     #[error("Json error: '{0}'.")]
     JsonError(String),
@@ -41,9 +43,13 @@ pub enum AppError {
     IoError(String),
     #[error("Could not colorize output.")]
     ColorizeError,
+    #[error("No root entry.")]
+    RootEntryNotFound,
+    #[error("No root subvolume.")]
+    RootSubvolumeMissing,
 
     // INTENTIONAL: lazy way to wrap every error possible, still json-compatible
-    #[error("General error: {0}")]
+    #[error("General error: '{0}'.")]
     GeneralError(String),
 }
 
@@ -63,6 +69,8 @@ pub enum AppMessage {
     JsonConfigAlreadyExists(String),
     JsonConfigCreated(String),
     GreetShown(String),
+    SnapshotCreated { hash: String, description: String },
+    FstabModified(String),
 }
 
 /*

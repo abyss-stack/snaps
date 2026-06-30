@@ -4,17 +4,24 @@ mod config;
 mod context;
 mod outcome;
 mod snapshot;
-use args::Args;
-use clap::Parser;
-use context::AppContext;
-use outcome::AppError::{ConfigDirNotFound, InternalHashError, IoError};
-
+use crate::config::load_config;
 use crate::outcome::AppMessage::{
-    GreetShown, HashGenerated, JsonConfigAlreadyExists, JsonConfigCreated,
+    FstabModified, GreetShown, HashGenerated, JsonConfigAlreadyExists, JsonConfigCreated,
+    SnapshotCreated,
 };
 use crate::{args::Commands, outcome::AppResult};
-
+use args::Args;
+use boot::FstabAction::*;
+use boot::modify_fstab;
+use clap::Parser;
+use context::AppContext;
+use outcome::AppError::{
+    ConfigDirNotFound, InternalHashError, InternalPathError, IoError, RootEntryNotFound,
+    RootSubvolumeMissing,
+};
+use snapshot::{create_snap, set_readonly_flag};
 use std::fs;
+use std::path::Path;
 use std::{
     process::ExitCode,
     time::{SystemTime, UNIX_EPOCH},
@@ -64,6 +71,46 @@ fn run_inner(ctx: &AppContext) -> AppResult<()> {
     let hash_string = format!("{:08x}", crc32fast::hash(&nanos.to_le_bytes()));
 
     ctx.emit_message(&HashGenerated(hash_string.clone()))?;
+
+    let config_path = dirs::config_dir()
+        .ok_or(ConfigDirNotFound)?
+        .join("abyss-snaps")
+        .join("config.json");
+
+    let config_path_str = config_path.to_str().ok_or_else(|| InternalPathError)?;
+    let fstab_config = load_config(config_path_str)?;
+
+    let root_entry = fstab_config
+        .iter()
+        .find(|entry| entry.is_root)
+        .ok_or_else(|| RootEntryNotFound)?;
+    let root_name = root_entry
+        .subvolume
+        .as_ref()
+        .ok_or_else(|| RootSubvolumeMissing)?;
+    let root_snapshot_path = Path::new("/@abyss-snaps")
+        .join(&hash_string)
+        .join(root_name);
+
+    let created_snapshots = create_snap(&fstab_config, &hash_string, "/@abyss-snaps")?;
+
+    for (mountpoint, name) in &created_snapshots {
+        ctx.emit_message(&SnapshotCreated {
+            hash: hash_string.clone(),
+            description: format!("{} -> {}", mountpoint, name),
+        })?;
+    }
+
+    set_readonly_flag(&root_snapshot_path, false)?;
+    modify_fstab(
+        ToSnapshot,
+        &fstab_config,
+        &root_snapshot_path,
+        Some(&hash_string),
+    )?;
+    set_readonly_flag(&root_snapshot_path, true)?;
+
+    ctx.emit_message(&FstabModified(root_snapshot_path.display().to_string()))?;
 
     Ok(())
 }
