@@ -9,6 +9,12 @@ pub enum AppMessage {
     /* Recipe */
     LoadingRecipe { path: String },
     RecipeLoaded,
+
+    /* Fstab */
+    BrewingFstab,
+    NonBtrfsBrewed { count: usize },
+    BtrfsBrewed { count: usize },
+    FstabBrewed,
 }
 
 impl AppMessage {

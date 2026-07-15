@@ -11,6 +11,7 @@ use std::path::{
     Path,
     PathBuf
 };
+use std::collections::HashSet;
 
 #[derive(Serialize, Deserialize)]
 pub struct BtrfsLayout {
@@ -21,6 +22,14 @@ pub struct BtrfsLayout {
     pub options: Vec<String>,
     pub bottom_options: Vec<String>,
     pub tracked: Vec<String>,
+    #[serde(skip)]
+    pub tracked_set: HashSet<String>,
+}
+
+impl BtrfsLayout {
+    fn init_tracked_set(&mut self) {
+        self.tracked_set = self.tracked.iter().cloned().collect();
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -59,10 +68,14 @@ impl Recipe {
                 what: err.to_string(),
             })?;
 
-        let recipe: Self = serde_json::from_str(&data)
+        let mut recipe: Self = serde_json::from_str(&data)
             .map_err(|err| AppError::RecipeParseError {
                 what: err.to_string(),
             })?;
+
+        if let Some(layout) = &mut recipe.btrfs_layout {
+            layout.init_tracked_set();
+        }
 
         AppMessage::RecipeLoaded.emit();
 
