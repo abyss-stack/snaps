@@ -21,18 +21,30 @@ use crate::outcome::{
     AppError,
     AppResult,
 };
+use crate::args::{
+    AppArgs,
+    Commands,
+};
+
+use clap::Parser;
+
 use std::process::ExitCode;
 
 fn main() -> ExitCode {
-    AppMessage::LoadingRecipe {path:"123".to_string()}.emit();
     match run() {
         Ok(_) => ExitCode::SUCCESS,
-        Err(_) => ExitCode::FAILURE,
+        Err(err) => {
+            eprintln!("{}", err);
+            ExitCode::FAILURE
+        },
     }
     
     
 }
 
 fn run() -> AppResult<()> {
+    let args = AppArgs::parse();
+        
+    
     Ok(())
 }
