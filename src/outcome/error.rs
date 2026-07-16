@@ -15,6 +15,10 @@ pub enum AppError {
     BtrfsSetFlagsError,
     SetReadonlyError { path: String },
 
+    FstabReadError {
+        path: String,
+        what: String,
+    },
     FstabWriteError { what: String },
     
     BtrfsLayoutRequired,

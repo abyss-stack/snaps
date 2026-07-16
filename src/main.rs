@@ -6,6 +6,7 @@ mod fstab;
 mod recipe;
 mod core;
 
+use crate::core::{burn_fstab, set_readonly_flag};
 use crate::outcome::{
     AppMessage,
     AppError,
@@ -37,7 +38,17 @@ fn run() -> AppResult<()> {
     match args.command {
         Commands::RecipeTemplate => {
             println!("{}", Recipe::TEMPLATE);
-        }
+        },
+        Commands::BurnFstab { source, target } => {
+            let content = std::fs::read_to_string(&source)
+                .map_err(|err| AppError::FstabReadError {
+                    path: source.to_string_lossy().into_owned(),
+                    what: err.to_string()
+                })?;
+            set_readonly_flag(&target, false)?;
+            burn_fstab(&target, &content)?;
+            set_readonly_flag(&target, true)?;
+        },
         Commands::Run { prefix } => {
             let prefix_value = match prefix {
                 Some(p) => p,
