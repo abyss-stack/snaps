@@ -14,6 +14,8 @@ pub enum AppError {
     BtrfsGetFlagsError,
     BtrfsSetFlagsError,
     SetReadonlyError { path: String },
+
+    FstabWriteError { what: String },
 }
 
 impl std::fmt::Display for AppError {

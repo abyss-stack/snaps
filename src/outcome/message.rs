@@ -20,7 +20,10 @@ pub enum AppMessage {
     ReadOnlyToggled {
         path: String,
         value: bool,
-    }
+    },
+    FstabBurned {
+        path: String
+    },
 }
 
 impl AppMessage {
