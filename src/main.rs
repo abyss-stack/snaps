@@ -111,6 +111,9 @@ fn run() -> AppResult<()> {
             }
         },
         Commands::Rollback { prefix } => {
+            if !getuid().is_root() {
+                return Err(AppError::RootRequired);
+            }
             AppMessage::UsingPrefix {
                 prefix: prefix.clone()
             }.emit();
