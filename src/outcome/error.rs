@@ -33,6 +33,9 @@ pub enum AppError {
     SnapshotNotFound { subvol: String },
     RenameSubvolError,
     DeleteSnapshotError,
+
+    /* Main */
+    RootRequired,
 }
 
 impl std::fmt::Display for AppError {
