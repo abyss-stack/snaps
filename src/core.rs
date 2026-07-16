@@ -54,7 +54,7 @@ pub fn set_readonly_flag(path: &Path, readonly: bool) -> AppResult<()> {
         false => flags &= !(btrfs_uapi::raw::BTRFS_SUBVOL_RDONLY as u64),
     }
 
-    set_subvol_flags(file.as_raw_fd(), flags)?;
+    let _ = set_subvol_flags(file.as_raw_fd(), flags)?;
     
     AppMessage::ReadOnlyToggled {
         path: path.to_string_lossy().into_owned(),
