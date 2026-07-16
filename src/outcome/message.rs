@@ -15,6 +15,12 @@ pub enum AppMessage {
     NonBtrfsBrewed { count: usize },
     BtrfsBrewed { count: usize },
     FstabBrewed,
+
+    /* Core */
+    ReadOnlyToggled {
+        path: String,
+        value: bool,
+    }
 }
 
 impl AppMessage {

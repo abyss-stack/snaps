@@ -9,6 +9,11 @@ pub enum AppError {
     /* Recipe */
     RecipeLoadError { what: String },
     RecipeParseError { what: String },
+
+    /* Core */
+    BtrfsGetFlagsError,
+    BtrfsSetFlagsError,
+    SetReadonlyError { path: String },
 }
 
 impl std::fmt::Display for AppError {
