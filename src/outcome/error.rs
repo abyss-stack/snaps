@@ -16,6 +16,15 @@ pub enum AppError {
     SetReadonlyError { path: String },
 
     FstabWriteError { what: String },
+    
+    BtrfsLayoutRequired,
+    SnapshotsDirOpenError { path: String },
+    PrefixCollision { prefix: String },
+    CreateCStringError,
+    OpenSubvolError {
+        subvol: String
+    },
+    CreateSnapshotError,
 }
 
 impl std::fmt::Display for AppError {

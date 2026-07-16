@@ -24,6 +24,8 @@ pub enum AppMessage {
     FstabBurned {
         path: String
     },
+    CreatingSnapshots,
+    SnapshotsCreated,
 }
 
 impl AppMessage {
