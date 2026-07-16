@@ -26,6 +26,11 @@ pub enum AppMessage {
     },
     CreatingSnapshots,
     SnapshotsCreated,
+
+    RollingBack {
+        prefix: String
+    },
+    RollbackDone,
 }
 
 impl AppMessage {

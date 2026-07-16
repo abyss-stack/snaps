@@ -25,6 +25,10 @@ pub enum AppError {
         subvol: String
     },
     CreateSnapshotError,
+    BottomDirOpenError { path: String },
+    SnapshotNotFound { subvol: String },
+    RenameSubvolError,
+    DeleteSnapshotError,
 }
 
 impl std::fmt::Display for AppError {
