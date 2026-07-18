@@ -155,13 +155,6 @@ pub fn rollback(recipe: &Recipe, prefix: &str) -> AppResult<Option<PathBuf>> {
 
     let bottom_path = Path::new(&layout.bottom);
     let snapshots_path = bottom_path.join(&layout.snapshots);
-
-    /*
-    let snapshots_file = File::open(&snapshots_path)
-        .map_err(|_| AppError::SnapshotsDirOpenError {
-            path: snapshots_path.to_string_lossy().into_owned()
-    })?;
-    */
     
     let bottom_file = File::open(&bottom_path)
         .map_err(|_| AppError::BottomDirOpenError {

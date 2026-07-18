@@ -55,8 +55,9 @@ fn run() -> AppResult<()> {
                     path: source.to_string_lossy().into_owned(),
                     what: err.to_string()
                 })?;
+            let fstab_path = target.join("etc/fstab");
             set_readonly_flag(&target, false)?;
-            burn_fstab(&target, &content)?;
+            burn_fstab(&fstab_path, &content)?;
             set_readonly_flag(&target, true)?;
         },
         Commands::Run { prefix } => {
