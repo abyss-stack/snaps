@@ -45,7 +45,7 @@ fn run() -> AppResult<()> {
         Commands::RecipeTemplate => {
             println!("{}", Recipe::TEMPLATE);
         },
-        Commands::BurnFstab { source, target, handle_ro} => {
+        Commands::BurnFstab { source, target, not_handle_ro} => {
             if !getuid().is_root() {
                 return Err(AppError::RootRequired);
             }
@@ -56,14 +56,14 @@ fn run() -> AppResult<()> {
                 })?;
             let fstab_path = target.join("etc/fstab");
 
-            match handle_ro {
+            match not_handle_ro {
                 true => {
-                    set_readonly_flag(&target, false)?;
                     burn_fstab(&fstab_path, &content)?;
-                    set_readonly_flag(&target, true)?;   
                 }
                 false => {
+                    set_readonly_flag(&target, false)?;
                     burn_fstab(&fstab_path, &content)?;
+                    set_readonly_flag(&target, true)?;
                 }
             }
         },

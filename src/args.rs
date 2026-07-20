@@ -12,8 +12,8 @@ pub enum Commands {
         source: PathBuf,
         #[arg(long)]
         target: PathBuf,
-        #[arg(long, default_value = "true")]
-        handle_ro: bool,
+        #[arg(long, help = "Not handle rw/ro for target.")]
+        not_handle_ro: bool,
     },
     Run {
         #[arg(long)]
