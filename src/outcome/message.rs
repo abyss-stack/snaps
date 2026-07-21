@@ -21,15 +21,11 @@ pub enum AppMessage {
         path: String,
         value: bool,
     },
-    FstabBurned {
-        path: String
-    },
+    FstabBurned { path: String },
     CreatingSnapshots,
     SnapshotsCreated,
 
-    RollingBack {
-        prefix: String
-    },
+    RollingBack { prefix: String },
     RollbackDone,
 
     /* Main */

@@ -25,9 +25,7 @@ pub enum AppError {
     SnapshotsDirOpenError { path: String },
     PrefixCollision { prefix: String },
     CreateCStringError,
-    OpenSubvolError {
-        subvol: String
-    },
+    OpenSubvolError { subvol: String },
     CreateSnapshotError,
     BottomDirOpenError { path: String },
     SnapshotNotFound { subvol: String },
