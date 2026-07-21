@@ -18,7 +18,7 @@ if __name__ == "__main__":
     doc["package"]["version"] = version
     cargo_toml.write_text(tomlkit.dumps(doc), encoding="utf-8")
 
-    sh.cargo("check")
+    sh.cargo("build", "--release")
     
     with sh.pushd(project_path):
         sh.git("add", ".")
