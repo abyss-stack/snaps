@@ -1,4 +1,5 @@
 import sh
+import tomlkit
 from pathlib import Path
 from datetime import datetime
 
@@ -11,10 +12,10 @@ if __name__ == "__main__":
 
     project_path = Path(__file__).parent
 
-    with sh.pushd(project_path):
-        # Requires 'cargo install cargo-edit'
-        sh.cargo("set-version", version)
+    print(project_path)
 
+    with sh.pushd(project_path):
+        
         sh.git("add", ".")
         sh.git("commit", "-m", f"ci-{now}")
         sh.git("push", "origin", BRANCH)
