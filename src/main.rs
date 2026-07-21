@@ -45,7 +45,7 @@ fn run() -> AppResult<()> {
         Commands::RecipeTemplate => {
             println!("{}", Recipe::TEMPLATE);
         },
-        Commands::BurnFstab { source, target, not_handle_ro} => {
+        Commands::BurnFstab { source, target, set_rdonly} => {
             if !getuid().is_root() {
                 return Err(AppError::RootRequired);
             }
@@ -54,17 +54,13 @@ fn run() -> AppResult<()> {
                     path: source.to_string_lossy().into_owned(),
                     what: err.to_string()
                 })?;
-            let fstab_path = target.join("etc/fstab");
+            let fstab_path = target.join(args.fstab_rel);
 
-            match not_handle_ro {
-                true => {
-                    burn_fstab(&fstab_path, &content)?;
-                }
-                false => {
-                    set_readonly_flag(&target, false)?;
-                    burn_fstab(&fstab_path, &content)?;
-                    set_readonly_flag(&target, true)?;
-                }
+            set_readonly_flag(&target, false)?;
+            burn_fstab(&fstab_path, &content)?;
+
+            if set_rdonly {
+                set_readonly_flag(&target, true)?;
             }
         },
         Commands::Run { prefix } => {
@@ -105,7 +101,7 @@ fn run() -> AppResult<()> {
 
             match (bootable, args.emit_fstab) {
                 (Some(bootable_path), false) => {
-                    let fstab_path = bootable_path.join("etc/fstab");
+                    let fstab_path = bootable_path.join(args.fstab_rel);
                     set_readonly_flag(&bootable_path, false)?;
                     burn_fstab(&fstab_path, &fstab_content)?;
                     set_readonly_flag(&bootable_path, true)?;
@@ -135,7 +131,7 @@ fn run() -> AppResult<()> {
 
             match (bootable, args.emit_fstab) {
                 (Some(bootable_path), false) => {
-                    let fstab_path = bootable_path.join("etc/fstab");
+                    let fstab_path = bootable_path.join(args.fstab_rel);
                     burn_fstab(&fstab_path, &fstab_content)?;
                 },
                 _ => {

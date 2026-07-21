@@ -12,8 +12,8 @@ pub enum Commands {
         source: PathBuf,
         #[arg(long)]
         target: PathBuf,
-        #[arg(long, help = "Not handle rw/ro for target.")]
-        not_handle_ro: bool,
+        #[arg(long)]
+        set_rdonly: bool,
     },
     Run {
         #[arg(long)]
@@ -30,6 +30,9 @@ pub enum Commands {
 pub struct AppArgs {
     #[arg(long, default_value = "/etc/abyss-snaps/recipe.json")]
     pub recipe: PathBuf,
+
+    #[arg(long, default_value = "etc/fstab")]
+    pub fstab_rel: String,
 
     #[arg(long, help = "Emit fstab to stdout.")]
     pub emit_fstab: bool,
