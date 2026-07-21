@@ -13,6 +13,8 @@ if __name__ == "__main__":
     print(f"Project version: {version}")
     print(f"Project path: {project_path}")
 
+    sh.cargo("check")
+    
     with sh.pushd(project_path):
         sh.git("add", ".")
         sh.git("commit", "-m", f"ci-{now}")
