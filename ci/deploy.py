@@ -1,4 +1,4 @@
-import subprocess
+import sh
 from pathlib import Path
 from datetime import datetime
 
@@ -8,10 +8,12 @@ if __name__ == "__main__":
     version = datetime.now().strftime("%y.%-m.%-d")
     print(f"Project version: {version}")
 
-    # Requires 'cargo install cargo-edit'
-    cargo_path = Path(__file__).parent
-    subprocess.run(["cargo", "set-version", version], cwd=cargo_path)
+    project_path = Path(__file__).parent
 
-    subprocess.run(["git", "add", "."])
-    subprocess.run(["git", "commit", "-m", f"ci-{version}"], cwd=cargo_path)
-    subprocess.run(["git", "push", "origin", BRANCH])
+    with sh.pushd(project_path):
+        # Requires 'cargo install cargo-edit'
+        sh.cargo("set-version", version)
+
+        sh.git("add", ".")
+        sh.git("commit", "-m", f"ci-{version}")
+        sh.git("push", "origin", BRANCH)
