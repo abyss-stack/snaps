@@ -5,7 +5,8 @@ from datetime import datetime
 BRANCH = "main"
 
 if __name__ == "__main__":
-    version = datetime.now().strftime("%y.%-m.%-d")
+    now = datetime.now()
+    version = now.strftime("%y.%-m.%-d")
     print(f"Project version: {version}")
 
     project_path = Path(__file__).parent
@@ -15,5 +16,5 @@ if __name__ == "__main__":
         sh.cargo("set-version", version)
 
         sh.git("add", ".")
-        sh.git("commit", "-m", f"ci-{version}")
+        sh.git("commit", "-m", f"ci-{now}")
         sh.git("push", "origin", BRANCH)
