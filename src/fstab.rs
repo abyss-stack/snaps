@@ -24,7 +24,10 @@ pub fn brew_fstab(recipe: &Recipe, prefix: Option<&str>) -> String {
 
     let layout = match &recipe.btrfs_layout {
         Some(layout_value) => layout_value,
-        None => return buffer,
+        None => {
+            AppMessage::FstabBrewed.emit();
+            return buffer
+        },
     };
 
     for entry in &recipe.btrfs_entries {
