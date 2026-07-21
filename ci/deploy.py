@@ -47,7 +47,6 @@ if __name__ == "__main__":
             tag_name, 
             str(binary_path), 
             "--title", f"Abyss Snaps {tag_name}", 
-            "--notes", f"Abyss Snaps {tag_name}",
-            "--clobber"
+            "--notes", f"Abyss Snaps {tag_name}"
         ) 
 
