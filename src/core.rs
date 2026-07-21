@@ -4,7 +4,6 @@ use crate::outcome::{
     AppResult,
 };
 use crate::recipe::Recipe;
-
 use std::ffi::CString;
 use std::fs::File;
 use std::os::fd::{
@@ -12,7 +11,10 @@ use std::os::fd::{
     AsRawFd,
     RawFd
 };
-use std::path::{Path, PathBuf};
+use std::path::{
+    Path,
+    PathBuf
+};
 
 pub fn get_subvol_flags(fd: RawFd) -> AppResult<u64> {
     let mut flags: u64 = 0;
