@@ -5,7 +5,7 @@ def generate_readme():
     
     content = """# Abyss Snaps
 
-**Snaps** is a filesystem state machine and orchestrator for Btrfs.
+A filesystem state machine and orchestrator for Btrfs.
 
 ## Features
 * **Recipe Snapshots**: Snapshots and rolls back only paths marked as `tracked` in the provided recipe.
