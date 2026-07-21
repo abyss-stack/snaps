@@ -1,0 +1,21 @@
+from pathlib import Path
+
+def generate_readme():
+    root_dir = Path(__file__).parent.parent
+    
+    content = """# Abyss Snaps
+
+**Abyss-snaps** is a filesystem state machine and orchestrator for Btrfs.
+
+## Features
+* **Recipe Snapshots**: Snapshots and rolls back only paths marked as `tracked` in the provided recipe.
+* **Untracked Paths**: Paths outside the `tracked` list are never snapshot and stay live.
+* **Single Volume Only**: Supports only one Btrfs disk volume (`subvolid=5`). No standalone subvolumes.
+* **Orchestration**: Includes compact flags for easy external control.
+* **JSON Output**: Output uses a strict JSON contract and is easy to parse.
+"""
+
+    (root_dir / "README.md").write_text(content.lstrip(), encoding="utf-8")
+
+if __name__ == "__main__":
+    generate_readme()
