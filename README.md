@@ -1,6 +1,6 @@
 # Abyss Snaps
 
-**Abyss-snaps** is a filesystem state machine and orchestrator for Btrfs.
+**Snaps** is a filesystem state machine and orchestrator for Btrfs.
 
 ## Features
 * **Recipe Snapshots**: Snapshots and rolls back only paths marked as `tracked` in the provided recipe.
