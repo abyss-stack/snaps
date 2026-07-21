@@ -1,6 +1,6 @@
 {
   "btrfs_layout": {
-    "device": "LABEL=...",
+    "device": "LABEL=system",
     "bottom": "/mnt/btrfs-bottom",
     "snapshots": "@abyss-snaps",
     "bootable": "@root",
@@ -11,11 +11,12 @@
   "btrfs_entries": [
     { "mountpoint": "/", "subvol": "@root" },
     { "mountpoint": "/home", "subvol": "@home" },
-    { "mountpoint": "/.snapshots", "subvol": "@abyss-snaps" }
+    { "mountpoint": "/proj", "subvol": "@proj" },
+    { "mountpoint": "/.abyss-snaps", "subvol": "@abyss-snaps" }
   ],
   "nonbtrfs_entries": [
     {
-      "device": "UUID=...",
+      "device": "LABEL=efi",
       "mountpoint": "/boot/efi",
       "fs": "vfat",
       "options": ["defaults"],
