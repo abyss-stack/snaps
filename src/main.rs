@@ -32,7 +32,7 @@ fn main() -> ExitCode {
     match run() {
         Ok(_) => ExitCode::SUCCESS,
         Err(e) => {
-	    e.emit();
+            e.emit();
             ExitCode::FAILURE
         },
     }
