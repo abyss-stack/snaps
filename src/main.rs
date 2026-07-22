@@ -31,8 +31,8 @@ use std::path::Path;
 fn main() -> ExitCode {
     match run() {
         Ok(_) => ExitCode::SUCCESS,
-        Err(err) => {
-            eprintln!("{}", err);
+        Err(e) => {
+	    e.emit();
             ExitCode::FAILURE
         },
     }

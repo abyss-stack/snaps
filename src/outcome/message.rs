@@ -34,9 +34,11 @@ pub enum AppMessage {
 }
 
 impl AppMessage {
-    pub fn emit(&self) {
+    pub fn to_json(&self) -> String {
         // EXPECT: infallible serialization.
-        let json = serde_json::to_string(self).expect("serialize_fail");
-        eprintln!("{}", json);
+        serde_json::to_string(self).expect("serialize_fail")
+    }
+    pub fn emit(&self) {
+        eprintln!("{}", self.to_json());
     }
 }
