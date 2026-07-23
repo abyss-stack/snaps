@@ -59,8 +59,10 @@ if __name__ == "__main__":
         version=datetime.now().strftime("%y.%-m.%-d"),
         path=Path(__file__).parent,
     )
+
+    tag_name = f"v{project.version}"
     
-    logger.info(f"Project: {project.name} v{project.version}.")
+    logger.info(f"Project: {project.name} {tag_name}.")
     project.update_manifest()
     logger.info("Cargo.toml updated.")
 
@@ -74,8 +76,6 @@ if __name__ == "__main__":
 
         if args.release:
             logger.info("Managing tags and releases.")
-
-            tag_name = f"v{project.version}"
     
             sh.cargo("build", "--release")
             sh.git("tag", "-f", tag_name)
