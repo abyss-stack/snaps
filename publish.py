@@ -84,13 +84,16 @@ if __name__ == "__main__":
             binary_name = f"abyss-{project.name}"
             binary_path = project.path / "target" / "release" / binary_name
 
-            sh.gh(
-                "release", "create", 
-                tag_name, 
-                str(binary_path), 
-                "--title", f"{project.name} {tag_name}", 
-                "--notes", f"{project.name} {tag_name}"
-            )
+            try:
+                sh.gh(
+                    "release", "create", 
+                    tag_name, 
+                    str(binary_path), 
+                    "--title", f"{project.name} {tag_name}", 
+                    "--notes", f"{project.name} {tag_name}"
+                )
+            except sh.ErrorReturnCode:
+                pass
 
             logger.info("Git release created/updated!")
 
