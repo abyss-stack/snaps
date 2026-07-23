@@ -48,7 +48,6 @@ class Project:
         
         self.manifest_path.write_text(tomlkit.dumps(manifest), encoding="utf-8")
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--release", action="store_true")
@@ -96,4 +95,3 @@ if __name__ == "__main__":
                 pass
 
             logger.info("Git release created/updated!")
-
