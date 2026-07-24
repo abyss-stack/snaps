@@ -22,7 +22,8 @@ structlog.configure(
         structlog.dev.ConsoleRenderer()
     ]
 )
-logger = structlog.get_logger(__name__)
+
+logger = structlog.get_logger()
 
 @dataclass(frozen=True)
 class GitRepo:
@@ -53,28 +54,33 @@ if __name__ == "__main__":
     parser.add_argument("--release", action="store_true")
     args = parser.parse_args()
     
+    now = datetime.now()
+    version_str = f"{now.strftime('%y')}.{now.month}.{now.day}"
+    
     project = Project(
         name="snaps",
-        version=datetime.now().strftime("%y.%-m.%-d"),
+        version=version_str,
         path=Path(__file__).parent,
     )
 
     tag_name = f"v{project.version}"
     
-    logger.info(f"Project: {project.name} {tag_name}.")
+    logger.info("Project initialized", name=project.name, version=tag_name)
     project.update_manifest()
-    logger.info("Cargo.toml updated.")
+    logger.info("Cargo.toml updated")
 
     with sh.pushd(project.path):
+        logger.info("Running cargo check")
         sh.cargo("check")
         
         sh.git("add", ".")
         sh.git("commit", "-m", f"deploy-{datetime.now()}", "--allow-empty")
         sh.git("push", project.repo.remote, project.repo.branch)
-        logger.info(f"Code pushed to {project.repo.branch} branch.")
+        
+        logger.info("Code pushed to remote", branch=project.repo.branch, remote=project.repo.remote)
 
         if args.release:
-            logger.info("Managing tags and releases.")
+            logger.info("Managing tags and releases")
     
             sh.cargo("build", "--release")
             sh.git("tag", "-f", tag_name)
@@ -92,7 +98,7 @@ if __name__ == "__main__":
                     "--notes", f"{project.name} {tag_name}"
                 )
             except sh.ErrorReturnCode:
-                pass
+                logger.warning("Release already exists, skipping creation", tag=tag_name)
 
             sh.gh(
                 "release", "upload",
@@ -101,4 +107,4 @@ if __name__ == "__main__":
                 "--clobber"
             )
 
-            logger.info("Git release created/updated!")
+            logger.info("Git release processed successfully", tag=tag_name)
