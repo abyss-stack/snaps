@@ -94,4 +94,10 @@ if __name__ == "__main__":
             except sh.ErrorReturnCode:
                 pass
 
+            sh.gh(
+                "release", "upload",
+                tag_name,
+                str(binary_path)
+            )
+
             logger.info("Git release created/updated!")
