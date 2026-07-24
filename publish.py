@@ -97,7 +97,8 @@ if __name__ == "__main__":
             sh.gh(
                 "release", "upload",
                 tag_name,
-                str(binary_path)
+                str(binary_path),
+                "--clobber"
             )
 
             logger.info("Git release created/updated!")
