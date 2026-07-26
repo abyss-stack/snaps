@@ -26,7 +26,7 @@ pub fn set_flags(fd: RawFd, flags: u64) -> AppResult<u64> {
     Ok(flags)
 }
 
-pub fn set_rdonly_flag(path: &Path, value: bool) -> AppResult<()> {
+pub fn toggle_rdonly_flag(path: &Path, value: bool) -> AppResult<()> {
     let file = File::open(path)
         .map_err(|_| AppError::SetRdonlyError {
              path: path.to_string_lossy().into_owned()
