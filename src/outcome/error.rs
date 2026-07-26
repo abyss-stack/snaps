@@ -7,6 +7,9 @@ pub enum AppError {
     GetFlagsError,
     SetFlagsError,
     SetRdonlyError { path: String },
+
+    /* fstab */
+    FstabWriteError { what: String },
 }
 
 impl AppError {

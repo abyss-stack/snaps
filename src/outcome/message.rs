@@ -3,10 +3,14 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum AppMessage {
+    /* flags */
     RdonlyToggled {
         path: String,
         value: bool,
-    }
+    },
+
+    /* fstab */
+    FstabBurned { path: String },
 }
 
 impl AppMessage {
