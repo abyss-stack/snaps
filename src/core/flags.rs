@@ -17,13 +17,13 @@ pub fn get_flags(fd: RawFd) -> AppResult<u64> {
     Ok(flags)
 }
 
-pub fn set_flags(fd: RawFd, flags: u64) -> AppResult<u64> {
+pub fn set_flags(fd: RawFd, flags: u64) -> AppResult<()> {
     // UNSAFE: btrfs ioctl.
     unsafe {
         set_flags_ioctl(fd, &flags)
             .map_err(|_| AppError::SetFlagsError)?;
     }
-    Ok(flags)
+    Ok(())
 }
 
 pub fn toggle_rdonly_flag(path: &Path, value: bool) -> AppResult<()> {
@@ -36,7 +36,7 @@ pub fn toggle_rdonly_flag(path: &Path, value: bool) -> AppResult<()> {
         true => flags |= btrfs_uapi::raw::BTRFS_SUBVOL_RDONLY as u64,
         false => flags &= !(btrfs_uapi::raw::BTRFS_SUBVOL_RDONLY as u64),
     }
-    let _ = set_flags(file.as_raw_fd(), flags)?;
+    set_flags(file.as_raw_fd(), flags)?;
     AppMessage::RdonlyToggled {
         path: path.to_string_lossy().into_owned(),
         value
