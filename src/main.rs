@@ -1,3 +1,6 @@
+mod core;
+mod outcome;
+
 fn main() {
-    println!("idk placeholder");
+    println!("Hello, world!");
 }
