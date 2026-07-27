@@ -6,7 +6,7 @@
 import os
 from pathlib import Path
 from dataclasses import dataclass
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import matplotlib.gridspec as gridspec
@@ -90,15 +90,12 @@ class Chart:
         # Левая часть: Пончик-чарт
         ax = fig.add_subplot(gs[0], aspect="equal", facecolor='none')
         colors = [self.pie(i / (len(sizes) - 1 or 1)) for i in range(len(sizes))]
-        wedges, texts, autotexts = ax.pie(
-            sizes, 
-            wedgeprops=dict(width=0.3, edgecolor='none'), 
-            startangle=100, 
-            colors=colors,
-            labels=labels,
-            labeldistance=1.15,
-            textprops={'fontsize': 9, 'fontfamily': 'monospace', 'color': '#4a5568'}
-        )
+        
+        ax.pie(sizes, 
+               wedgeprops=dict(width=0.3, edgecolor='none'), 
+               startangle=100, 
+               colors=colors)
+        
         ax.text(0, 0, f"Total\n{totals['size']/1024:.1f} KB\n{totals['loc']} LOC",
                 ha='center', va='center', fontsize=15, color=self.col, fontfamily='monospace', weight='bold')
 
