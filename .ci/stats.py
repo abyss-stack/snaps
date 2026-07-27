@@ -124,10 +124,15 @@ class Chart:
 
         y -= 0.04
         ax2.text(0.02, y, "TOXICITY MAP", fontsize=11, fontfamily='monospace', color=self.col, weight='bold', va='top')
-        cax = ax2.inset_axes([0.02, y - 0.055, 0.96, 0.025])
+        
+        # --- ИЗМЕНЕНО: Ширина уменьшена с 0.96 до 0.76, чтобы совпадать с краем текста LOC ---
+        cax = ax2.inset_axes([0.02, y - 0.055, 0.76, 0.025])
+        # -------------------------------------------------------------------------------------
+        
         cb = fig.colorbar(plt.cm.ScalarMappable(norm=mcolors.Normalize(0, 10), cmap=self.cmap), cax=cax, orientation='horizontal')
         cb.outline.set_visible(False)
         cb.set_ticks([])
+
 
         y -= 0.10
         for marker in ["unwrap", "expect", "unsafe"]:
