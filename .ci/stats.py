@@ -46,12 +46,11 @@ class Analyzer:
             with open(path, errors="ignore") as f:
                 for line in f:
                     loc += 1
-                    line_upper = line.upper()
-                    if "// UNSAFE" in line_upper:
+                    if "// UNSAFE" in line:
                         penalty_score += 2.0
-                    if "// UNWRAP" in line_upper:
+                    if "// UNWRAP" in line:
                         penalty_score += 1.5
-                    if "// EXPECT" in line_upper:
+                    if "// EXPECT" in line:
                         penalty_score += 1.0
         except Exception:
             pass
