@@ -90,21 +90,40 @@ class Chart:
         # Левая часть: Пончик-чарт
         ax = fig.add_subplot(gs[0], aspect="equal", facecolor='none')
         colors = [self.pie(i / (len(sizes) - 1 or 1)) for i in range(len(sizes))]
-        ax.pie(sizes, wedgeprops=dict(width=0.3, edgecolor='none'), startangle=100, colors=colors)
+        wedges, texts, autotexts = ax.pie(
+            sizes, 
+            wedgeprops=dict(width=0.3, edgecolor='none'), 
+            startangle=100, 
+            colors=colors,
+            labels=labels,
+            labeldistance=1.15,
+            textprops={'fontsize': 9, 'fontfamily': 'monospace', 'color': '#4a5568'}
+        )
         ax.text(0, 0, f"Total\n{totals['size']/1024:.1f} KB\n{totals['loc']} LOC",
                 ha='center', va='center', fontsize=15, color=self.col, fontfamily='monospace', weight='bold')
 
-        # Правая часть: Список файлов
+        # Правая часть: Список файлов с цветами из диаграммы
         ax2 = fig.add_subplot(gs[1], facecolor='none')
         for s in ax2.spines.values():
             s.set_visible(False)
         ax2.set_xticks([])
         ax2.set_yticks([])
 
-        y = 0.95
-        for lbl, sz, lc in zip(labels, sizes, locs):
-            ax2.text(0.02, y, f"{lbl:<30}", fontfamily='monospace', fontsize=12, color=self.col, va='top')
-            ax2.text(0.52, y, f"{sz/1024:>7.1f} KB | {lc:>6} LOC", fontfamily='monospace', fontsize=12, color='#4a5568', va='top')
+        # Центрируем список файлов
+        y = 0.92
+        for lbl, sz, lc, color in zip(labels, sizes, locs, colors):
+            # Обрезаем длинные имена
+            display_name = lbl if len(lbl) <= 35 else lbl[:32] + "..."
+            
+            # Имя файла цветом из диаграммы
+            ax2.text(0.05, y, display_name, 
+                    fontfamily='monospace', fontsize=11, 
+                    color=color, va='top', weight='bold')
+            
+            # Размер и LOC серым цветом
+            ax2.text(0.55, y, f"{sz/1024:>7.1f} KB | {lc:>6} LOC", 
+                    fontfamily='monospace', fontsize=10, 
+                    color='#4a5568', va='top')
             y -= 0.048
 
         plt.subplots_adjust(left=0.03, right=0.97, top=0.95, bottom=0.05)
