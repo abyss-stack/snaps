@@ -106,15 +106,18 @@ class Chart:
         ax2.set_xticks([])
         ax2.set_yticks([])
 
-        # Вычисляем отступ для центрирования по вертикали
         n_items = len(labels)
-        # Начинаем сверху и делаем равномерные отступы
-        start_y = 0.92
         step = 0.048
         total_height = (n_items - 1) * step
-        # Смещаем вниз, чтобы центрировать
-        offset = (0.92 - 0.05 - total_height) / 2
-        y = 0.92 - offset
+
+        # Центрируем список по высоте относительно пончика (пониже, чем раньше)
+        # Верхняя граница ~0.78, нижняя ~0.22 — визуально совпадает с круговой диаграммой
+        available_top = 0.78
+        available_bottom = 0.22
+        available_height = available_top - available_bottom
+        start_y = available_top - (available_height - total_height) / 2
+
+        y = start_y
 
         for lbl, sz, lc, color in zip(labels, sizes, locs, colors):
             # Обрезаем длинные имена
