@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "fail", rename_all = "snake_case")]
@@ -6,19 +7,39 @@ pub enum AppError {
     /* flags */
     GetFlagsError,
     SetFlagsError,
-    SetRdonlyError { path: String },
+    SetRdonlyError { path: PathBuf },
 
     /* fstab */
     FstabWriteError { what: String },
+
+    /* recipe */
+    RecipeLoadError { what: String },
+    RecipeParseError { what: String },
+
+    /* deploy */
+    BtrfsLayoutRequired,
+    SnapshotsDirOpenError { path: PathBuf },
+    PrefixCollision { prefix: String },
+    CreateCStringError,
+    OpenSubvolError { subvol: String },
+    CreateSnapshotError,
+    BottomDirOpenError { path: String },
+    SnapshotNotFound { subvol: String },
+    RenameSubvolError,
+    DeleteSnapshotError,
+
+    FstabReadError { path: PathBuf, what: String },
+
+    /* main */
+    RootRequired,
 }
 
 impl AppError {
+    #[allow(clippy::expect_used, reason = "Infallible serialization.")]
     pub fn to_json(&self) -> String {
-        // EXPECT: infallible serialization.
-        // Standard types only, guaranteed to always be serializable.
         serde_json::to_string(self).expect("serialize_fail")
     }
-    
+
     pub fn emit(&self) {
         eprintln!("{}", self.to_json());
     }
