@@ -106,8 +106,16 @@ class Chart:
         ax2.set_xticks([])
         ax2.set_yticks([])
 
-        # Центрируем список файлов
-        y = 0.92
+        # Вычисляем отступ для центрирования по вертикали
+        n_items = len(labels)
+        # Начинаем сверху и делаем равномерные отступы
+        start_y = 0.92
+        step = 0.048
+        total_height = (n_items - 1) * step
+        # Смещаем вниз, чтобы центрировать
+        offset = (0.92 - 0.05 - total_height) / 2
+        y = 0.92 - offset
+
         for lbl, sz, lc, color in zip(labels, sizes, locs, colors):
             # Обрезаем длинные имена
             display_name = lbl if len(lbl) <= 35 else lbl[:32] + "..."
@@ -121,7 +129,7 @@ class Chart:
             ax2.text(0.55, y, f"{sz/1024:>7.1f} KB | {lc:>6} LOC", 
                     fontfamily='monospace', fontsize=10, 
                     color='#4a5568', va='top')
-            y -= 0.048
+            y -= step
 
         plt.subplots_adjust(left=0.03, right=0.97, top=0.95, bottom=0.05)
         plt.savefig(path, dpi=150, bbox_inches='tight', transparent=True)
