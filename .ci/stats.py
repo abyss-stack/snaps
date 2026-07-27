@@ -57,8 +57,18 @@ class Analyzer:
 
 class Chart:
     def __init__(self):
-        self.pie = mcolors.LinearSegmentedColormap.from_list("p", ['#4a5568', '#718096', '#a0aec0', '#cbd5e0', '#4eb3d3', '#3182ce'])
-        self.col = '#718096'
+        self.cmap = mcolors.LinearSegmentedColormap.from_list(
+            "nord_git", ['#eceff4', '#d8dee9', '#4c566a', '#3b4252', '#2e3440']
+        )
+
+        # Строгий монохромный градиент для круговой диаграммы (без розового и синего)
+        # Плавно переходит от светлого арктического к глубокому угольному Nord0
+        self.pie = mcolors.LinearSegmentedColormap.from_list(
+            "nord_pie_mono", ['#eceff4', '#e5e9f0', '#d8dee9', '#4c566a', '#3b4252', '#2e3440']
+        )
+
+        # Базовый нейтральный цвет для текста и центральной метки (Nord3)
+        self.col = '#4c566a'
 
     def save(self, data: Dict[str, Metrics], path: str, maxn: int = 12):
         if not data:
@@ -89,7 +99,8 @@ class Chart:
 
         # Левая часть: Пончик-чарт
         ax = fig.add_subplot(gs[0], aspect="equal", facecolor='none')
-        colors = [self.pie(i / (len(sizes) - 1 or 1)) for i in range(len(sizes))]
+        n = len(sizes)
+        colors = [self.pie(i / max(n - 1, 1)) for i in range(n)]
         
         ax.pie(sizes, 
                wedgeprops=dict(width=0.3, edgecolor='none'), 
@@ -99,7 +110,7 @@ class Chart:
         ax.text(0, 0, f"Total\n{totals['size']/1024:.1f} KB\n{totals['loc']} LOC",
                 ha='center', va='center', fontsize=15, color=self.col, fontfamily='monospace', weight='bold')
 
-        # Правая часть: Список файлов с цветами из диаграммы
+        # Правая часть: Список файлов
         ax2 = fig.add_subplot(gs[1], facecolor='none')
         for s in ax2.spines.values():
             s.set_visible(False)
@@ -107,31 +118,28 @@ class Chart:
         ax2.set_yticks([])
 
         n_items = len(labels)
-        step = 0.048
+        step = 0.045                    # чуть плотнее
         total_height = (n_items - 1) * step
 
-        # Центрируем список по высоте относительно пончика (пониже, чем раньше)
-        # Верхняя граница ~0.78, нижняя ~0.22 — визуально совпадает с круговой диаграммой
-        available_top = 0.78
-        available_bottom = 0.22
-        available_height = available_top - available_bottom
-        start_y = available_top - (available_height - total_height) / 2
+        # Жёстко опускаем список, чтобы он сидел на одной высоте с пончиком
+        # Верх списка ≈ 0.72, низ ≈ 0.28
+        center_y = 0.50
+        start_y = center_y + total_height / 2
 
         y = start_y
 
         for lbl, sz, lc, color in zip(labels, sizes, locs, colors):
-            # Обрезаем длинные имена
             display_name = lbl if len(lbl) <= 35 else lbl[:32] + "..."
             
-            # Имя файла цветом из диаграммы
+            # Имя файла — ярким цветом сегмента
             ax2.text(0.05, y, display_name, 
                     fontfamily='monospace', fontsize=11, 
-                    color=color, va='top', weight='bold')
+                    color=color, va='center', weight='bold')
             
-            # Размер и LOC серым цветом
+            # Размер и LOC — нейтральный серый
             ax2.text(0.55, y, f"{sz/1024:>7.1f} KB | {lc:>6} LOC", 
                     fontfamily='monospace', fontsize=10, 
-                    color='#4a5568', va='top')
+                    color='#718096', va='center')
             y -= step
 
         plt.subplots_adjust(left=0.03, right=0.97, top=0.95, bottom=0.05)
