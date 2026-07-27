@@ -129,10 +129,16 @@ class Chart:
         cb.outline.set_visible(False)
         cb.set_ticks([])
 
-        y -= 0.12
-        ax2.text(0.02, y, f"UNWRAP: {totals['unwrap']:<4}  EXPECT: {totals['expect']:<4}  UNSAFE: {totals['unsafe']:<4}",
-                fontsize=13, fontfamily='monospace', color=self.col, weight='bold', va='top')
+        y -= 0.10
+        for marker in ["unwrap", "expect", "unsafe"]:
+            ax2.text(
+                0.02, y, f"{marker.upper()}: {totals[marker]}",
+                fontsize=13, fontfamily='monospace', color=self.col, weight='bold', va='top'
+            )
+            y -= 0.045
+        # -------------------------------------------------
 
+        
         plt.subplots_adjust(left=0.03, right=0.97, top=0.95, bottom=0.05)
         plt.savefig(path, dpi=150, bbox_inches='tight', transparent=True)
         plt.close()
