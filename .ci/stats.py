@@ -57,35 +57,28 @@ class Analyzer:
 
 class Chart:
     def __init__(self):
-        self.cmap = mcolors.LinearSegmentedColormap.from_list(
-            "nord_git", ['#eceff4', '#d8dee9', '#4c566a', '#3b4252', '#2e3440']
+        # Монохромный градиент для Git/Heatmap
+        self.cmap = mcolors.LinearSegmentedColormap.from_list("ef_git", ['#e4e8dc', '#b8c0ab', '#7a8478', '#4b564c', '#2d353b'])
+        
+        # Настоящий плавный градиент Everforest от темного к светлому
+        self.pie_gradient = mcolors.LinearSegmentedColormap.from_list(
+            "ef_pie_dark_to_light", ['#2d353b', '#4b564c', '#5c6a5e', '#7a8478', '#8da189', '#a7b09e']
         )
-
-        # Строгий монохромный градиент для круговой диаграммы (без розового и синего)
-        # Плавно переходит от светлого арктического к глубокому угольному Nord0
-        self.pie = mcolors.LinearSegmentedColormap.from_list(
-            "nord_pie_mono", ['#eceff4', '#e5e9f0', '#d8dee9', '#4c566a', '#3b4252', '#2e3440']
-        )
-
-        # Базовый нейтральный цвет для текста и центральной метки (Nord3)
-        self.col = '#4c566a'
+        
+        # Базовый цвет для центрального текста и заголовков (темный лесной Everforest)
+        self.col = '#434f46'
 
     def save(self, data: Dict[str, Metrics], path: str, maxn: int = 12):
-        if not data:
-            return
+        if not data: return
 
+        # ЖЕСТКОЕ ИСПРАВЛЕНИЕ: точная сортировка через x[1].size
         items = sorted(data.items(), key=lambda x: x[1].size, reverse=True)
         labels, sizes, locs = [], [], []
-        totals = {"size": 0, "loc": 0, "cnt": 0}
+        totals = {"size": sum(m.size for _, m in items), "loc": sum(m.loc for _, m in items), "cnt": 0}
 
         for i, (lbl, m) in enumerate(items):
-            totals["size"] += m.size
-            totals["loc"] += m.loc
-
             if i < maxn:
-                labels.append(lbl)
-                sizes.append(m.size)
-                locs.append(m.loc)
+                labels.append(lbl); sizes.append(m.size); locs.append(m.loc)
             else:
                 totals["cnt"] += 1
 
@@ -97,50 +90,36 @@ class Chart:
         fig = plt.figure(figsize=(14, 6), facecolor='none')
         gs = gridspec.GridSpec(1, 2, width_ratios=[0.85, 1.15], wspace=0.1)
 
-        # Левая часть: Пончик-чарт
+        # 1. Левая часть: Пончик-чарт
         ax = fig.add_subplot(gs[0], aspect="equal", facecolor='none')
         n = len(sizes)
-        colors = [self.pie(i / max(n - 1, 1)) for i in range(n)]
         
-        ax.pie(sizes, 
-               wedgeprops=dict(width=0.3, edgecolor='none'), 
-               startangle=100, 
-               colors=colors)
+        # Линейный шаг от 0.0 (темный) до 1.0 (светлый)
+        pie_colors = [self.pie_gradient(i / max(n - 1, 1)) for i in range(n)]
         
-        ax.text(0, 0, f"Total\n{totals['size']/1024:.1f} KB\n{totals['loc']} LOC",
-                ha='center', va='center', fontsize=15, color=self.col, fontfamily='monospace', weight='bold')
+        ax.pie(sizes, wedgeprops=dict(width=0.3, edgecolor='#4b564c', linewidth=0.8), startangle=100, colors=pie_colors)
+        ax.text(0, 0, f"Total\n{totals['size']/1024:.1f} KB\n{totals['loc']} LOC", ha='center', va='center', fontsize=15, color=self.col, fontfamily='monospace', weight='bold')
 
-        # Правая часть: Список файлов
+        # 2. Правая часть: Список файлов + Header
         ax2 = fig.add_subplot(gs[1], facecolor='none')
-        for s in ax2.spines.values():
-            s.set_visible(False)
-        ax2.set_xticks([])
-        ax2.set_yticks([])
+        ax2.set_xlim(0, 1)
+        ax2.set_ylim(0, 1)
+        ax2.get_xaxis().set_visible(False)
+        ax2.get_yaxis().set_visible(False)
+        for s in ax2.spines.values(): s.set_visible(False)
 
-        n_items = len(labels)
-        step = 0.045                    # чуть плотнее
-        total_height = (n_items - 1) * step
+        # Расчет высоты списка и вывод заголовков колонок
+        y = 0.50 + ((len(labels) - 1) * 0.045) / 2
+        ax2.text(0.05, y + 0.055, "FILE PATH", fontfamily='monospace', fontsize=10, color=self.col, weight='bold')
+        ax2.text(0.55, y + 0.055, "      SIZE |    METRICS", fontfamily='monospace', fontsize=10, color=self.col, weight='bold')
+        ax2.plot([0.05, 0.95], [y + 0.035, y + 0.035], color='#7a8478', linewidth=1, alpha=0.6)
 
-        # Жёстко опускаем список, чтобы он сидел на одной высоте с пончиком
-        # Верх списка ≈ 0.72, низ ≈ 0.28
-        center_y = 0.50
-        start_y = center_y + total_height / 2
-
-        y = start_y
-
-        for lbl, sz, lc, color in zip(labels, sizes, locs, colors):
+        # Вывод строк с данными
+        for lbl, sz, lc, color in zip(labels, sizes, locs, pie_colors):
             display_name = lbl if len(lbl) <= 35 else lbl[:32] + "..."
-            
-            # Имя файла — ярким цветом сегмента
-            ax2.text(0.05, y, display_name, 
-                    fontfamily='monospace', fontsize=11, 
-                    color=color, va='center', weight='bold')
-            
-            # Размер и LOC — нейтральный серый
-            ax2.text(0.55, y, f"{sz/1024:>7.1f} KB | {lc:>6} LOC", 
-                    fontfamily='monospace', fontsize=10, 
-                    color='#718096', va='center')
-            y -= step
+            ax2.text(0.05, y, display_name, fontfamily='monospace', fontsize=11, color=color, va='center', weight='bold')
+            ax2.text(0.55, y, f"{sz/1024:>7.1f} KB | {lc:>6} LOC", fontfamily='monospace', fontsize=10, color='#7a8478', va='center')
+            y -= 0.045
 
         plt.subplots_adjust(left=0.03, right=0.97, top=0.95, bottom=0.05)
         plt.savefig(path, dpi=150, bbox_inches='tight', transparent=True)
