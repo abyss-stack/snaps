@@ -23,7 +23,7 @@ pub enum Commands {
 }
 
 #[derive(Parser)]
-#[command(version)]
+#[command(version = env!("VERSION"))]
 pub struct AppArgs {
     #[arg(long, default_value = "/etc/abyss-snaps/recipe.json")]
     pub recipe: PathBuf,

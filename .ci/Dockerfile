@@ -22,6 +22,9 @@ RUN mkdir src && \
 COPY src/ src/
 COPY template.json ./
 
+ARG VERSION
+ENV VERSION=$VERSION
+
 ENV RUSTFLAGS="-C target-feature=+crt-static"
 
 RUN cargo clippy --target x86_64-unknown-linux-musl --all-targets -- -D warnings

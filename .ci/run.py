@@ -11,6 +11,8 @@ from pathlib import Path
 import sys
 import sh
 
+TARGET_VERSION = '2026.07.29-1'
+
 def main():
     ci_dir = Path(__file__).parent.resolve()
     project_root = ci_dir.parent
@@ -39,7 +41,13 @@ def main():
     artifact_dir.mkdir(exist_ok=True)
     try:
         with chdir(project_root):
-            sh.docker.buildx.build("-f", dockerfile, "--target", "exporter", "-o", artifact_dir, ".", _fg=True)
+            sh.docker.buildx.build(
+                "-f", dockerfile, 
+                "--target", "exporter", 
+                "--build-arg", f"VERSION={TARGET_VERSION}",
+                "-o", artifact_dir, 
+                ".", _fg=True
+            )
         print(f"Binary in: {artifact_dir}")
     except sh.ErrorReturnCode as e:
         print(f"Docker build error: {e}", file=sys.stderr)
