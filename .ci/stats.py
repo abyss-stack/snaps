@@ -39,11 +39,17 @@ class Analyzer:
 
     def scan(self, exts: Set[str], out: str) -> Dict[str, Metrics]:
         data = {}
+        ignored_parts = {"target", ".git", ".ci", ".venv"}
+
         for p in self.root.rglob("*"):
             if p.is_file() and p.suffix.lower() in exts and p.name != out:
+                if any(part in p.parts for part in ignored_parts):
+                    continue
+                    
                 loc = self._parse(p)
                 data[str(p.relative_to(self.root))] = Metrics(p.stat().st_size, loc)
         return data
+
 
 class Chart:
     def __init__(self):
