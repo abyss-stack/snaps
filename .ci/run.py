@@ -1,6 +1,6 @@
-#!/usr/bin/env -S uv run
+#!/usr/bin/env -S uv run --python 3.12
 # /// script
-# requires-python = ">=3.12.0, <3.13.0"
+# requires-python = "==3.12.*"
 # dependencies = [
 #     "sh==2.2.2",
 # ]
@@ -113,10 +113,11 @@ def main():
                 print("GitHub Release successfully created.")
             except sh.ErrorReturnCode:
                 print(f"Release v{TARGET_VERSION} already exists. Falling back to edit/overwrite mode...")
-                # If it already exists, update it and overwrite the asset (compatible with older gh versions)
+                # Fix: Use --asset flag for the edit subcommand to update binary successfully
                 sh.gh.release.edit(
                     f"v{TARGET_VERSION}",
-                    str(binary_path),
+                    "--clobber",
+                    "--asset", str(binary_path),
                     "--title", f"Release v{TARGET_VERSION}",
                     "--notes", f"Release v{TARGET_VERSION}",
                     _fg=True
