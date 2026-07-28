@@ -1,12 +1,15 @@
 #!/usr/bin/env -S uv run
 # /// script
-# requires-python = "==3.12.*"
-# dependencies = []
+# requires-python = ">=3.12.0, <3.13.0"
+# dependencies = [
+#     "sh==2.2.2",
+# ]
 # ///
 
-import subprocess
-import sys
+from contextlib import chdir
 from pathlib import Path
+import sys
+import sh
 
 def main():
     ci_dir = Path(__file__).parent.resolve()
@@ -21,27 +24,27 @@ def main():
         print(f"Error: Script not found at {stats_script}", file=sys.stderr)
         sys.exit(1)
 
-    cmd_stats = f'"{stats_script}" --path "{project_root}" --output "{output_img}"'
+    # Инициализация и запуск stats.py напрямую как бинарника
+    run_stats = sh.Command(str(stats_script))
     try:
-        subprocess.run(cmd_stats, shell=True, check=True)
+        run_stats("--path", project_root, "--output", output_img, _fg=True)
         print(f"Chart saved to: {output_img}")
-    except subprocess.CalledProcessError as e:
+    except sh.ErrorReturnCode as e:
         print(f"Stats error: {e}", file=sys.stderr)
-        sys.exit(e.returncode)
+        sys.exit(e.exit_code)
 
     if not dockerfile.exists():
         print(f"Error: Dockerfile not found at {dockerfile}", file=sys.stderr)
         sys.exit(1)
 
     artifact_dir.mkdir(exist_ok=True)
-    cmd_build = f"docker buildx build -f {dockerfile} --target exporter -o {artifact_dir} {project_root}"
-
     try:
-        subprocess.run(cmd_build, shell=True, check=True)
+        with chdir(project_root):
+            sh.docker.buildx.build("-f", dockerfile, "--target", "exporter", "-o", artifact_dir, ".", _fg=True)
         print(f"Binary in: {artifact_dir}")
-    except subprocess.CalledProcessError as e:
+    except sh.ErrorReturnCode as e:
         print(f"Docker build error: {e}", file=sys.stderr)
-        sys.exit(e.returncode)
+        sys.exit(e.exit_code)
 
 if __name__ == "__main__":
     main()
