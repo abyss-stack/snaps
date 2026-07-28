@@ -27,10 +27,13 @@ pub enum Commands {
 pub struct AppArgs {
     #[arg(long, default_value = "/etc/abyss-snaps/recipe.json")]
     pub recipe: PathBuf,
+    
     #[arg(long, default_value = "etc/fstab")]
     pub fstab_rel: String,
+    
     #[arg(long, help = "Emit fstab to stdout.")]
     pub emit_fstab: bool,
+    
     #[command(subcommand)]
     pub command: Commands,
 }

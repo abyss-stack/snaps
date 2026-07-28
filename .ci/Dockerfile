@@ -28,4 +28,3 @@ RUN cargo build --release --target x86_64-unknown-linux-musl && \
 
 FROM scratch AS exporter
 COPY --from=builder /app/abyss-snaps /
-COPY --from=builder /app/template.json /
