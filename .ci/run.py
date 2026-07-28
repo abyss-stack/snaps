@@ -101,15 +101,27 @@ def main():
     try:
         # Deploy using GitHub CLI if available
         if sh.which("gh"):
-            sh.gh.release.create(
-                f"v{TARGET_VERSION}",
-                str(binary_path),
-                "--title", f"Release v{TARGET_VERSION}",
-                "--notes", f"Release v{TARGET_VERSION}",
-                "--clobber",  # Намертво перезаписывает ассеты внутри существующего релиза
-                _fg=True
-            )
-            print("GitHub Release successfully created/updated.")
+            try:
+                # Try creating a new release first
+                sh.gh.release.create(
+                    f"v{TARGET_VERSION}",
+                    str(binary_path),
+                    "--title", f"Release v{TARGET_VERSION}",
+                    "--notes", f"Release v{TARGET_VERSION}",
+                    _fg=True
+                )
+                print("GitHub Release successfully created.")
+            except sh.ErrorReturnCode:
+                print(f"Release v{TARGET_VERSION} already exists. Falling back to edit/overwrite mode...")
+                # If it already exists, update it and overwrite the asset (compatible with older gh versions)
+                sh.gh.release.edit(
+                    f"v{TARGET_VERSION}",
+                    str(binary_path),
+                    "--title", f"Release v{TARGET_VERSION}",
+                    "--notes", f"Release v{TARGET_VERSION}",
+                    _fg=True
+                )
+                print("GitHub Release successfully updated.")
         
         # Fallback to GitLab CLI if available
         elif sh.which("glab"):
@@ -118,7 +130,7 @@ def main():
                 str(binary_path),
                 "--name", f"Release v{TARGET_VERSION}",
                 "--notes", f"Release v{TARGET_VERSION}",
-                "--overwrite",  # Аналог clobber для GitLab CLI
+                "--overwrite",
                 _fg=True
             )
             print("GitLab Release successfully created/updated.")
