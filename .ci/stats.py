@@ -66,7 +66,7 @@ class Chart:
         if not data: 
             return
 
-        items = sorted(data.items(), key=lambda x: x[1].size, reverse=True)
+        items = sorted(data.items(), key=lambda x: x[1].loc, reverse=True)
         labels, sizes, locs = [], [], []
         totals = {"size": sum(m.size for _, m in items), "loc": sum(m.loc for _, m in items), "cnt": 0}
 
