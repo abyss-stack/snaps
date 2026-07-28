@@ -21,7 +21,7 @@ class GitConfig:
 
 def main():
     # Setup configuration Data Transfer Object (DTO)
-    git_cfg = GitConfig(remote="origin", branch="dev")
+    git_cfg = GitConfig(remote="origin", branch="main")
 
     ci_dir = Path(__file__).parent.resolve()
     project_root = ci_dir.parent
