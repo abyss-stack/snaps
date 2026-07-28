@@ -83,10 +83,14 @@ def main():
 
             sh.git.push(git_cfg.remote, git_cfg.branch, "--force", _fg=True)
             
-            # Create an annotated tag and push it to the configured remote
+            # Create an annotated tag with a soft check and push it with force
             print(f"Tagging release: v{TARGET_VERSION}")
-            sh.git.tag("-a", f"v{TARGET_VERSION}", "-m", f"Release v{TARGET_VERSION}", _fg=True)
-            sh.git.push(git_cfg.remote, f"v{TARGET_VERSION}", _fg=True)
+            try:
+                sh.git.tag("-a", f"v{TARGET_VERSION}", "-m", f"Release v{TARGET_VERSION}", "--force", _fg=True)
+            except sh.ErrorReturnCode:
+                print(f"Tag v{TARGET_VERSION} already exists locally, forcing update.")
+                
+            sh.git.push(git_cfg.remote, f"v{TARGET_VERSION}", "--force", _fg=True)
 
     except sh.ErrorReturnCode as e:
         print(f"Git execution error: {e}", file=sys.stderr)
