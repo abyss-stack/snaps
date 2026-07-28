@@ -1,0 +1,27 @@
+{
+  "btrfs_layout": {
+    "device": "LABEL=system",
+    "bottom": "/mnt/btrfs-bottom",
+    "snapshots": "@abyss-snaps",
+    "bootable": "@root",
+    "options": ["strictatime"],
+    "bottom_options": ["subvolid=5"],
+    "tracked": ["@root", "@home"]
+  },
+  "btrfs_entries": [
+    { "mountpoint": "/", "subvol": "@root" },
+    { "mountpoint": "/home", "subvol": "@home" },
+    { "mountpoint": "/proj", "subvol": "@proj" },
+    { "mountpoint": "/.abyss-snaps", "subvol": "@abyss-snaps" }
+  ],
+  "nonbtrfs_entries": [
+    {
+      "device": "LABEL=efi",
+      "mountpoint": "/boot/efi",
+      "fs": "vfat",
+      "options": ["defaults"],
+      "dump": 0,
+      "pass": 0
+    }
+  ]
+}
