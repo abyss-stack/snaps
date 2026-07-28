@@ -72,8 +72,37 @@ def main():
     # 2. Handle Git operations using parameters from the config DTO
     try:
         with chdir(project_root):
+            # FIX: Dynamically update README.md BEFORE git add so it is included in the commit
+            if readme_path.exists():
+                print("Injecting current version deployment block into README.md...")
+                text = readme_path.read_text(encoding="utf-8")
+                
+                install_block = (
+                    "## Installation\n\n"
+                    "Install the pre-compiled static binary directly to your system:\n\n"
+                    "```sh\n"
+                    f"sudo curl -L -o /usr/local/bin/abyss-snaps https://github.com{TARGET_VERSION}/abyss-snaps \\\n"
+                    "  && sudo chmod +x /usr/local/bin/abyss-snaps\n"
+                    "```\n\n"
+                    "Verify the installation:\n"
+                    "```sh\n"
+                    "abyss-snaps --version\n"
+                    "```\n"
+                )
+                
+                marker = "## Installation"
+                if marker in text:
+                    before_install = text.split(marker)[0]
+                    remainder = text.split(marker)[1]
+                    after_install = ""
+                    if "\n## " in remainder:
+                        after_install = "\n## " + remainder.split("\n## ", 1)[1]
+                    readme_path.write_text(before_install + install_block + after_install, encoding="utf-8")
+                else:
+                    readme_path.write_text(text.strip() + "\n\n" + install_block, encoding="utf-8")
+                print("README.md installation manifest updated successfully.")
+
             print(f"Adding modifications and pushing to {git_cfg.remote}/{git_cfg.branch}...")
-            
             sh.git.add(".", _fg=True)
             
             # Catching error if working tree is clean to prevent pipeline failure
@@ -150,39 +179,6 @@ def main():
     except sh.ErrorReturnCode as e:
         print(f"Platform release platform error: {e}", file=sys.stderr)
         sys.exit(e.exit_code)
-
-    # 4. Dynamically append or replace the Installation block inside README.md
-    if readme_path.exists():
-        print("Injecting current version deployment block into README.md...")
-        text = readme_path.read_text(encoding="utf-8")
-        
-        install_block = (
-            "## Installation\n\n"
-            "Install the pre-compiled static binary directly to your system:\n\n"
-            "```sh\n"
-            f"sudo curl -L -o /usr/local/bin/abyss-snaps https://github.com{TARGET_VERSION}/abyss-snaps \\\n"
-            "  && sudo chmod +x /usr/local/bin/abyss-snaps\n"
-            "```\n\n"
-            "Verify the installation:\n"
-            "```sh\n"
-            "abyss-snaps --version\n"
-            "```\n"
-        )
-        
-        # Check if the block already exists to overwrite it, otherwise append to EOF
-        marker = "## Installation"
-        if marker in text:
-            before_install = text.split(marker)[0]
-            # Capture everything starting from the next markdown section header if it exists
-            after_install = ""
-            remainder = text.split(marker)[1]
-            if "\n## " in remainder:
-                after_install = "\n## " + remainder.split("\n## ", 1)[1]
-            readme_path.write_text(before_install + install_block + after_install, encoding="utf-8")
-        else:
-            # Clean tailing spaces and cleanly append code block at EOF
-            readme_path.write_text(text.strip() + "\n\n" + install_block, encoding="utf-8")
-        print("README.md installation manifest updated successfully.")
 
 if __name__ == "__main__":
     main()

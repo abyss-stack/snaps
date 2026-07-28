@@ -16,3 +16,16 @@ A filesystem state machine and orchestrator for Btrfs.
   <img src=".ci/artifact/codebase_size.png" alt="Codebase Stats" width="100%">
 </p>
 
+## Installation
+
+Install the pre-compiled static binary directly to your system:
+
+```sh
+sudo curl -L -o /usr/local/bin/abyss-snaps https://github.com2026.07.29-1/abyss-snaps \
+  && sudo chmod +x /usr/local/bin/abyss-snaps
+```
+
+Verify the installation:
+```sh
+abyss-snaps --version
+```
