@@ -13,6 +13,6 @@ A filesystem state machine and orchestrator for Btrfs.
 * **JSON Output**: Output uses a strict JSON contract and is easy to parse.
 
 <p align="center">
-  <img src=".ci/codebase_size.png" alt="Codebase Stats" width="100%">
+  <img src=".ci/artifact/codebase_size.png" alt="Codebase Stats" width="100%">
 </p>
 
