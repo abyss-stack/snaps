@@ -39,7 +39,7 @@ class Analyzer:
 
     def scan(self, exts: Set[str], out: str) -> Dict[str, Metrics]:
         data = {}
-        ignored_parts = {"target", ".git", ".ci", ".venv"}
+        ignored_parts = {"target", ".git"}
 
         for p in self.root.rglob("*"):
             if p.is_file() and p.suffix.lower() in exts and p.name != out:
