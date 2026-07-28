@@ -2,7 +2,7 @@ use crate::core::recipe::Recipe;
 use crate::outcome::{AppError, AppMessage, AppResult};
 use std::ffi::CString;
 use std::fs::File;
-use std::os::fd::{AsFd, AsRawFd, RawFd};
+use std::os::fd::AsFd;
 use std::path::{Path, PathBuf};
 
 pub fn rollback(recipe: &Recipe, prefix: &str) -> AppResult<Option<PathBuf>> {
@@ -21,8 +21,9 @@ pub fn rollback(recipe: &Recipe, prefix: &str) -> AppResult<Option<PathBuf>> {
     let bottom_path = Path::new(&layout.bottom);
     let snapshots_path = bottom_path.join(&layout.snapshots);
 
-    let bottom_file = File::open(&bottom_path).map_err(|_| AppError::BottomDirOpenError {
-        path: snapshots_path.to_string_lossy().into_owned(),
+    let bottom_file = File::open(&bottom_path).map_err(|e| AppError::BottomDirOpenError {
+        path: snapshots_path.to_path_buf(),
+        what: e.to_string(),
     })?;
 
     let mut sources: Vec<(CString, String)> = Vec::new();
@@ -61,12 +62,16 @@ pub fn rollback(recipe: &Recipe, prefix: &str) -> AppResult<Option<PathBuf>> {
         let snapshot_name = format!("{}.{}", prefix, subvol);
         let source_path = snapshots_path.join(&snapshot_name);
 
-        let snapshot_file = File::open(&source_path).map_err(|_| AppError::OpenSubvolError {
+        let snapshot_file = File::open(&source_path).map_err(|e| AppError::OpenSubvolError {
             subvol: subvol.clone(),
+            what: e.to_string(),
         })?;
 
         if target.exists() {
-            std::fs::rename(&target, &old).map_err(|_| AppError::RenameSubvolError)?;
+            std::fs::rename(&target, &old).map_err(|e| AppError::RenameSubvolError {
+                subvol: target.to_string_lossy().into_owned(),
+            what: e.to_string(),
+            })?;
         }
 
         btrfs_uapi::subvolume::snapshot_create(
@@ -76,14 +81,19 @@ pub fn rollback(recipe: &Recipe, prefix: &str) -> AppResult<Option<PathBuf>> {
             false,
             &[],
         )
-        .map_err(|_| AppError::CreateSnapshotError)?;
+        .map_err(|e| AppError::CreateSnapshotError {
+            what: e.to_string(),
+        })?;
 
         if old.exists() {
             let old_c_name = CString::new(format!("{}.old", subvol))
                 .map_err(|_| AppError::CreateCStringError)?;
 
             btrfs_uapi::subvolume::subvolume_delete(bottom_file.as_fd(), &old_c_name)
-                .map_err(|_| AppError::DeleteSnapshotError)?;
+                .map_err(|e| AppError::DeleteSnapshotError {
+                    subvol: old_c_name.to_string_lossy().into_owned(),
+                    what: e.to_string(),
+            })?;
         }
     }
 

@@ -4,34 +4,33 @@ use std::path::PathBuf;
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "fail", rename_all = "snake_case")]
 pub enum AppError {
-    /* flags */
+    /* Deploy */
+    BottomDirOpenError { path: PathBuf, what: String },
+    BtrfsLayoutRequired,
+    CreateCStringError,
+    CreateSnapshotError { what: String },
+    DeleteSnapshotError { subvol: String, what: String },
+    OpenSubvolError { subvol: String, what: String },
+    PrefixCollision { prefix: String },
+    RenameSubvolError { subvol: String, what: String },
+    SnapshotNotFound { subvol: String },
+    SnapshotsDirOpenError { path: PathBuf, what: String },
+
+    /* Flags */
     GetFlagsError { path: PathBuf, what: String },
     SetFlagsError { path: PathBuf, what: String },
     SetRdonlyError { path: PathBuf, what: String },
 
-    /* fstab */
+    /* Fstab */
+    FstabReadError { path: PathBuf, what: String },
     FstabWriteError { path: PathBuf, what: String },
 
-    /* recipe */
+    /* Main */
+    RootRequired,
+
+    /* Recipe */
     RecipeLoadError { path: PathBuf, what: String },
     RecipeParseError { what: String },
-
-    /* deploy */
-    BtrfsLayoutRequired,
-    SnapshotsDirOpenError { path: PathBuf },
-    PrefixCollision { prefix: String },
-    CreateCStringError,
-    OpenSubvolError { subvol: String },
-    CreateSnapshotError,
-    BottomDirOpenError { path: String },
-    SnapshotNotFound { subvol: String },
-    RenameSubvolError,
-    DeleteSnapshotError,
-
-    FstabReadError { path: PathBuf, what: String },
-
-    /* main */
-    RootRequired,
 }
 
 impl AppError {
