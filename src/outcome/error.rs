@@ -13,7 +13,7 @@ pub enum AppError {
     FstabWriteError { path: PathBuf, what: String },
 
     /* recipe */
-    RecipeLoadError { what: String },
+    RecipeLoadError { path: PathBuf, what: String },
     RecipeParseError { what: String },
 
     /* deploy */

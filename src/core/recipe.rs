@@ -48,21 +48,31 @@ pub struct Recipe {
 
 impl Recipe {
     pub const TEMPLATE: &str = include_str!("../../template.json");
-    pub fn load(path: &Path) -> AppResult<Self> {
+    
+    pub fn load<P>(path: P) -> AppResult<Self>
+    where
+        P: AsRef<Path>,
+    {
+        let path = path.as_ref();
+        
         AppMessage::LoadingRecipe {
             path: path.to_path_buf(),
         }
         .emit();
-        let data = std::fs::read_to_string(path).map_err(|err| AppError::RecipeLoadError {
-            what: err.to_string(),
+        
+        let data = std::fs::read_to_string(path).map_err(|e| AppError::RecipeLoadError {
+            path: path.to_path_buf(),
+            what: e.to_string(),
         })?;
-        let mut recipe: Self =
-            serde_json::from_str(&data).map_err(|err| AppError::RecipeParseError {
-                what: err.to_string(),
+        
+        let mut recipe: Self = serde_json::from_str(&data).map_err(|e| AppError::RecipeParseError {
+                what: e.to_string(),
             })?;
+            
         if let Some(layout) = &mut recipe.btrfs_layout {
             layout.init_tracked_set();
         }
+        
         AppMessage::RecipeLoaded.emit();
         Ok(recipe)
     }
