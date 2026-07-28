@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y \
     musl-tools \
     && rm -rf /var/lib/apt/lists/*
 
-RUN rustup target add x86_64-unknown-linux-musl
+RUN rustup target add x86_64-unknown-linux-musl && \
+    rustup component add clippy
 
 WORKDIR /app
 
@@ -22,6 +23,8 @@ COPY src/ src/
 COPY template.json ./
 
 ENV RUSTFLAGS="-C target-feature=+crt-static"
+
+RUN cargo clippy --target x86_64-unknown-linux-musl --all-targets -- -D warnings
 
 RUN cargo build --release --target x86_64-unknown-linux-musl && \
     cp /app/target/x86_64-unknown-linux-musl/release/abyss-snaps /app/abyss-snaps
