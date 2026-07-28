@@ -112,12 +112,19 @@ def main():
                 )
                 print("GitHub Release successfully created.")
             except sh.ErrorReturnCode:
-                print(f"Release v{TARGET_VERSION} already exists. Falling back to edit/overwrite mode...")
-                # Fix: Use --asset flag for the edit subcommand to update binary successfully
+                print(f"Release v{TARGET_VERSION} already exists. Updating asset and metadata...")
+                
+                # 1. Force upload/overwrite the binary asset using compatible upload command
+                sh.gh.release.upload(
+                    f"v{TARGET_VERSION}",
+                    str(binary_path),
+                    "--clobber",
+                    _fg=True
+                )
+                
+                # 2. Update title and notes using standard edit command without illegal flags
                 sh.gh.release.edit(
                     f"v{TARGET_VERSION}",
-                    "--clobber",
-                    "--asset", str(binary_path),
                     "--title", f"Release v{TARGET_VERSION}",
                     "--notes", f"Release v{TARGET_VERSION}",
                     _fg=True
