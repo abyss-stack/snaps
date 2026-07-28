@@ -31,6 +31,7 @@ def main():
     dockerfile = ci_dir / "Dockerfile"
     artifact_dir = ci_dir / "artifact"
     binary_path = artifact_dir / "abyss-snaps"
+    readme_path = project_root / "README.md"
 
     if not stats_script.exists():
         print(f"Error: Script not found at {stats_script}", file=sys.stderr)
@@ -149,6 +150,39 @@ def main():
     except sh.ErrorReturnCode as e:
         print(f"Platform release platform error: {e}", file=sys.stderr)
         sys.exit(e.exit_code)
+
+    # 4. Dynamically append or replace the Installation block inside README.md
+    if readme_path.exists():
+        print("Injecting current version deployment block into README.md...")
+        text = readme_path.read_text(encoding="utf-8")
+        
+        install_block = (
+            "## Installation\n\n"
+            "Install the pre-compiled static binary directly to your system:\n\n"
+            "```sh\n"
+            f"sudo curl -L -o /usr/local/bin/abyss-snaps https://github.com{TARGET_VERSION}/abyss-snaps \\\n"
+            "  && sudo chmod +x /usr/local/bin/abyss-snaps\n"
+            "```\n\n"
+            "Verify the installation:\n"
+            "```sh\n"
+            "abyss-snaps --version\n"
+            "```\n"
+        )
+        
+        # Check if the block already exists to overwrite it, otherwise append to EOF
+        marker = "## Installation"
+        if marker in text:
+            before_install = text.split(marker)[0]
+            # Capture everything starting from the next markdown section header if it exists
+            after_install = ""
+            remainder = text.split(marker)[1]
+            if "\n## " in remainder:
+                after_install = "\n## " + remainder.split("\n## ", 1)[1]
+            readme_path.write_text(before_install + install_block + after_install, encoding="utf-8")
+        else:
+            # Clean tailing spaces and cleanly append code block at EOF
+            readme_path.write_text(text.strip() + "\n\n" + install_block, encoding="utf-8")
+        print("README.md installation manifest updated successfully.")
 
 if __name__ == "__main__":
     main()
