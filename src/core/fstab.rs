@@ -1,10 +1,11 @@
 use std::path::Path;
 
-use crate::core::recipe::Recipe;
 use crate::outcome::{AppError, AppMessage, AppResult};
+use crate::core::recipe::Recipe;
 
 pub fn burn_fstab(path: &Path, content: &str) -> AppResult<()> {
-    std::fs::write(path, content).map_err(|e| AppError::FstabWriteError {
+    std::fs::write(path, content)
+        .map_err(|e| AppError::FstabWriteError {
         what: e.to_string(),
     })?;
     AppMessage::FstabBurned {

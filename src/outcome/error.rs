@@ -5,9 +5,9 @@ use std::path::PathBuf;
 #[serde(tag = "fail", rename_all = "snake_case")]
 pub enum AppError {
     /* flags */
-    GetFlagsError,
-    SetFlagsError,
-    SetRdonlyError { path: PathBuf },
+    GetFlagsError { path: PathBuf, what: String },
+    SetFlagsError { path: PathBuf, what: String },
+    SetRdonlyError { path: PathBuf, what: String },
 
     /* fstab */
     FstabWriteError { what: String },
