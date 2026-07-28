@@ -24,7 +24,6 @@ def main():
         print(f"Error: Script not found at {stats_script}", file=sys.stderr)
         sys.exit(1)
 
-    # Инициализация и запуск stats.py напрямую как бинарника
     run_stats = sh.Command(str(stats_script))
     try:
         run_stats("--path", project_root, "--output", output_img, _fg=True)
