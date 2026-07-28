@@ -1,8 +1,8 @@
-use crate::outcome::{AppError, AppMessage, AppResult};
 use serde::{Deserialize, Serialize};
-
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
+
+use crate::outcome::{AppError, AppMessage, AppResult};
 
 #[derive(Serialize, Deserialize)]
 pub struct BtrfsLayout {

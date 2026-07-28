@@ -1,9 +1,10 @@
-use crate::core::recipe::Recipe;
-use crate::outcome::{AppError, AppMessage, AppResult};
 use std::ffi::CString;
 use std::fs::File;
 use std::os::fd::AsFd;
 use std::path::{Path, PathBuf};
+
+use crate::core::recipe::Recipe;
+use crate::outcome::{AppError, AppMessage, AppResult};
 
 pub fn rollback(recipe: &Recipe, prefix: &str) -> AppResult<Option<PathBuf>> {
     AppMessage::RollingBack {
@@ -21,7 +22,7 @@ pub fn rollback(recipe: &Recipe, prefix: &str) -> AppResult<Option<PathBuf>> {
     let bottom_path = Path::new(&layout.bottom);
     let snapshots_path = bottom_path.join(&layout.snapshots);
 
-    let bottom_file = File::open(&bottom_path).map_err(|e| AppError::BottomDirOpenError {
+    let bottom_file = File::open(bottom_path).map_err(|e| AppError::BottomDirOpenError {
         path: snapshots_path.to_path_buf(),
         what: e.to_string(),
     })?;
@@ -53,11 +54,9 @@ pub fn rollback(recipe: &Recipe, prefix: &str) -> AppResult<Option<PathBuf>> {
         sources.push((c_name, entry.subvol.clone()));
     }
 
-    // TODO: try going without .old
-
     for (c_name, subvol) in sources {
         let target = bottom_path.join(&subvol);
-        let old = bottom_path.join(format!("{}.old", subvol));
+        let tmp = bottom_path.join(format!("{}.tmp", subvol));
 
         let snapshot_name = format!("{}.{}", prefix, subvol);
         let source_path = snapshots_path.join(&snapshot_name);
@@ -68,7 +67,7 @@ pub fn rollback(recipe: &Recipe, prefix: &str) -> AppResult<Option<PathBuf>> {
         })?;
 
         if target.exists() {
-            std::fs::rename(&target, &old).map_err(|e| AppError::RenameSubvolError {
+            std::fs::rename(&target, &tmp).map_err(|e| AppError::RenameSubvolError {
                 subvol: target.to_string_lossy().into_owned(),
             what: e.to_string(),
             })?;
@@ -85,13 +84,13 @@ pub fn rollback(recipe: &Recipe, prefix: &str) -> AppResult<Option<PathBuf>> {
             what: e.to_string(),
         })?;
 
-        if old.exists() {
-            let old_c_name = CString::new(format!("{}.old", subvol))
+        if tmp.exists() {
+            let tmp_c_name = CString::new(format!("{}.tmp", subvol))
                 .map_err(|_| AppError::CreateCStringError)?;
 
-            btrfs_uapi::subvolume::subvolume_delete(bottom_file.as_fd(), &old_c_name)
+            btrfs_uapi::subvolume::subvolume_delete(bottom_file.as_fd(), &tmp_c_name)
                 .map_err(|e| AppError::DeleteSnapshotError {
-                    subvol: old_c_name.to_string_lossy().into_owned(),
+                    subvol: tmp_c_name.to_string_lossy().into_owned(),
                     what: e.to_string(),
             })?;
         }

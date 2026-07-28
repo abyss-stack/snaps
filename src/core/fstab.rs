@@ -70,8 +70,8 @@ pub fn brew_fstab(recipe: &Recipe, prefix: Option<&str>) -> String {
             layout.device, entry.mountpoint
         );
 
-        let mut options_iter = layout.options.iter().peekable();
-        while let Some(opt) = options_iter.next() {
+        let options_iter = layout.options.iter().peekable();
+        for opt in options_iter {
             let _ = write!(&mut buffer, "{},", opt);
         }
 
