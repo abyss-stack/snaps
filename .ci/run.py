@@ -106,9 +106,10 @@ def main():
                 str(binary_path),
                 "--title", f"Release v{TARGET_VERSION}",
                 "--notes", f"Release v{TARGET_VERSION}",
+                "--clobber",  # Намертво перезаписывает ассеты внутри существующего релиза
                 _fg=True
             )
-            print("GitHub Release successfully created.")
+            print("GitHub Release successfully created/updated.")
         
         # Fallback to GitLab CLI if available
         elif sh.which("glab"):
@@ -117,9 +118,10 @@ def main():
                 str(binary_path),
                 "--name", f"Release v{TARGET_VERSION}",
                 "--notes", f"Release v{TARGET_VERSION}",
+                "--overwrite",  # Аналог clobber для GitLab CLI
                 _fg=True
             )
-            print("GitLab Release successfully created.")
+            print("GitLab Release successfully created/updated.")
             
         else:
             print("Warning: Neither 'gh' nor 'glab' CLI discovered in PATH. Binary asset upload bypassed.", file=sys.stderr)
