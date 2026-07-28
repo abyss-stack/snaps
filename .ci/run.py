@@ -81,7 +81,7 @@ def main():
                     "## Installation\n\n"
                     "Install the pre-compiled static binary directly to your system:\n\n"
                     "```sh\n"
-                    f"sudo curl -L -o /usr/local/bin/abyss-snaps https://github.com{TARGET_VERSION}/abyss-snaps \\\n"
+                    f"sudo curl -L -o /usr/local/bin/abyss-snaps https://https://github.com/abyss-stack/snaps/releases/tag/{TARGET_VERSION}/abyss-snaps \\\n"
                     "  && sudo chmod +x /usr/local/bin/abyss-snaps\n"
                     "```\n\n"
                     "Verify the installation:\n"
