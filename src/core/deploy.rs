@@ -1,9 +1,10 @@
-use crate::core::recipe::Recipe;
-use crate::outcome::{AppError, AppMessage, AppResult};
 use std::ffi::CString;
 use std::fs::File;
 use std::os::fd::AsFd;
 use std::path::PathBuf;
+
+use crate::core::recipe::Recipe;
+use crate::outcome::{AppError, AppMessage, AppResult};
 
 pub fn create_snapshots(recipe: &Recipe, prefix: &str) -> AppResult<Option<PathBuf>> {
     AppMessage::CreatingSnapshots.emit();
