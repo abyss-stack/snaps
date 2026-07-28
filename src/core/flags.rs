@@ -7,13 +7,13 @@ use crate::outcome::{AppError, AppMessage, AppResult};
 nix::ioctl_read!(get_flags_ioctl, btrfs_uapi::raw::BTRFS_IOCTL_MAGIC, 25, u64);
 nix::ioctl_write_ptr!(set_flags_ioctl, btrfs_uapi::raw::BTRFS_IOCTL_MAGIC, 26, u64);
 
-pub fn get_flags(fd: BorrowedFd<'_>) -> Result<u64, nix::Error> {
+fn get_flags(fd: BorrowedFd<'_>) -> Result<u64, nix::Error> {
     let mut flags: u64 = 0;
     unsafe { get_flags_ioctl(fd.as_raw_fd(), &mut flags) }?;
     Ok(flags)
 }
 
-pub fn set_flags(fd: BorrowedFd<'_>, flags: u64) -> Result<(), nix::Error> {
+fn set_flags(fd: BorrowedFd<'_>, flags: u64) -> Result<(), nix::Error> {
     unsafe { set_flags_ioctl(fd.as_raw_fd(), &flags) }?;
     Ok(())
 }

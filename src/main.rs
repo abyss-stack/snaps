@@ -7,7 +7,7 @@ mod outcome;
 
 use crate::args::{AppArgs, Commands};
 use crate::core::deploy::create_snapshots;
-use crate::core::flags::{get_flags, set_flags, toggle_rdonly_flag};
+use crate::core::flags::toggle_rdonly_flag;
 use crate::core::fstab::{brew_fstab, burn_fstab};
 use crate::core::recipe::Recipe;
 use crate::core::rollback::rollback;
@@ -61,17 +61,20 @@ fn run() -> AppResult<()> {
             if !getuid().is_root() {
                 return Err(AppError::RootRequired);
             }
-            let prefix_value = match prefix {
-                Some(p) => p,
+
+            let prefix_value: String = match prefix {
+                Some(p) => p.to_string(),
                 None => {
-                    // EXPECT: 1970-01-01 is always in the past.
+                    #[allow(clippy::expect_used, reason = "1970-01-01 is always in the past.")]
                     let nanos = SystemTime::now()
                         .duration_since(UNIX_EPOCH)
                         .expect("timestamp_fail")
                         .as_nanos();
+
                     format!("{:08x}", crc32fast::hash(&nanos.to_le_bytes()))
                 }
             };
+            
             AppMessage::UsingPrefix {
                 prefix: prefix_value.clone(),
             }
