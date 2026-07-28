@@ -81,7 +81,7 @@ def main():
             except sh.ErrorReturnCode:
                 print("No changes to commit (working tree clean).")
 
-            sh.git.push(git_cfg.remote, git_cfg.branch, _fg=True)
+            sh.git.push(git_cfg.remote, git_cfg.branch, "--force", _fg=True)
             
             # Create an annotated tag and push it to the configured remote
             print(f"Tagging release: v{TARGET_VERSION}")
