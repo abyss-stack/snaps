@@ -28,7 +28,6 @@ where
     
     let file = OpenOptions::new()
         .read(true)
-        .write(true)
         .open(path)
         .map_err(|e| AppError::SetRdonlyError {
             path: path.to_path_buf(),
