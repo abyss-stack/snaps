@@ -10,7 +10,7 @@ pub enum AppError {
     SetRdonlyError { path: PathBuf, what: String },
 
     /* fstab */
-    FstabWriteError { what: String },
+    FstabWriteError { path: PathBuf, what: String },
 
     /* recipe */
     RecipeLoadError { what: String },
