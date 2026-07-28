@@ -1,7 +1,11 @@
 #!/usr/bin/env -S uv run
 # /// script
-# requires-python = ">=3.11"
-# dependencies = ["matplotlib", "click", "structlog"]
+# requires-python = "==3.12.*"
+# dependencies = [
+#     "matplotlib==3.11.1",
+#     "click==8.4.2",
+#     "structlog==26.1.0",
+# ]
 # ///
 
 import os
