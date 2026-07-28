@@ -1,16 +1,18 @@
+#!/usr/bin/env -S uv run
 # /// script
 # requires-python = ">=3.11"
 # dependencies = ["matplotlib", "click", "structlog"]
 # ///
 
 import os
-from pathlib import Path
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, List, Set
-import matplotlib.pyplot as plt
+
+import click
 import matplotlib.colors as mcolors
 import matplotlib.gridspec as gridspec
-import click
+import matplotlib.pyplot as plt
 import structlog
 
 log = structlog.get_logger()
@@ -45,14 +47,14 @@ class Analyzer:
 
 class Chart:
     def __init__(self):
-        self.cmap = mcolors.LinearSegmentedColormap.from_list("ef_git", ['#e4e8dc', '#b8c0ab', '#7a8478', '#4b564c', '#2d353b'])
         self.pie_gradient = mcolors.LinearSegmentedColormap.from_list(
             "ef_pie_dark_to_light", ['#2d353b', '#4b564c', '#5c6a5e', '#7a8478', '#8da189', '#a7b09e']
         )
         self.col = '#434f46'
 
     def save(self, data: Dict[str, Metrics], path: str, maxn: int = 12):
-        if not data: return
+        if not data: 
+            return
 
         items = sorted(data.items(), key=lambda x: x[1].size, reverse=True)
         labels, sizes, locs = [], [], []
@@ -60,7 +62,9 @@ class Chart:
 
         for i, (lbl, m) in enumerate(items):
             if i < maxn:
-                labels.append(lbl); sizes.append(m.size); locs.append(m.loc)
+                labels.append(lbl)
+                sizes.append(m.size)
+                locs.append(m.loc)
             else:
                 totals["cnt"] += 1
 
@@ -80,13 +84,18 @@ class Chart:
         ax.text(0, 0, f"Total\n{totals['size']/1024:.1f} KB\n{totals['loc']} LOC", ha='center', va='center', fontsize=15, color=self.col, fontfamily='monospace', weight='bold')
 
         ax2 = fig.add_subplot(gs[1], facecolor='none')
+        
         ax2.set_xlim(0, 1)
         ax2.set_ylim(0, 1)
+        
         ax2.get_xaxis().set_visible(False)
         ax2.get_yaxis().set_visible(False)
-        for s in ax2.spines.values(): s.set_visible(False)
+        for s in ax2.spines.values(): 
+            s.set_visible(False)
 
-        y = 0.50 + ((len(labels) - 1) * 0.045) / 2
+        y = 0.85 
+        y_step = 0.055
+
         ax2.text(0.05, y + 0.055, "FILE PATH", fontfamily='monospace', fontsize=10, color=self.col, weight='bold')
         ax2.text(0.55, y + 0.055, "      SIZE |    METRICS", fontfamily='monospace', fontsize=10, color=self.col, weight='bold')
         ax2.plot([0.05, 0.95], [y + 0.035, y + 0.035], color='#7a8478', linewidth=1, alpha=0.6)
@@ -95,7 +104,7 @@ class Chart:
             display_name = lbl if len(lbl) <= 35 else lbl[:32] + "..."
             ax2.text(0.05, y, display_name, fontfamily='monospace', fontsize=11, color=color, va='center', weight='bold')
             ax2.text(0.55, y, f"{sz/1024:>7.1f} KB | {lc:>6} LOC", fontfamily='monospace', fontsize=10, color='#7a8478', va='center')
-            y -= 0.045
+            y -= y_step
 
         plt.subplots_adjust(left=0.03, right=0.97, top=0.95, bottom=0.05)
         plt.savefig(path, dpi=150, bbox_inches='tight', transparent=True)
@@ -104,7 +113,7 @@ class Chart:
 @click.command()
 @click.option('-p', '--path', default='.')
 @click.option('-t', '--target', default='.py,.rs')
-@click.option('-o', '--output', default='disk_analysis.png')
+@click.option('-o', '--output', default='codebase_size.png')
 def main(path, target, output):
     structlog.configure(processors=[structlog.processors.TimeStamper(fmt="iso"), structlog.processors.KeyValueRenderer()])
     exts = {e.strip().lower() if e.startswith('.') else f".{e.strip().lower()}" for e in target.split(',')}
