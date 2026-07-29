@@ -126,8 +126,9 @@ fn run() -> AppResult<()> {
 
             run_rollback(&recipe, &prefix)?;
 
-            // UNWRAP: If this line runs, btrfs_layout is Some().
-            let layout = recipe.btrfs_layout.as_ref().unwrap();
+            let Some(layout) = &recipe.btrfs_layout else {
+                return Err(AppError::NoLayoutForRollback);
+            };
 
             // NOTE: Pass None for prefix, because we are brewing fstab for a main system.
             let fstab_content = brew_fstab(&recipe, None);
