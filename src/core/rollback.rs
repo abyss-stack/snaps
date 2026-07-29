@@ -73,7 +73,7 @@ pub fn rollback(recipe: &Recipe, prefix: &str) -> AppResult<()> {
         let temporary_path = bottom_path.join(&temporary_name);
     
         // EXAMPLE: rename '@home' to '@home.tmp'.
-        // INTENTIONAL: 'tmp' is added from the right not to collide with 'tmp' prefix.
+        // INTENTIONAL: The '.tmp' extension is appended to the right to avoid collisions with 'tmp' prefix.
         if source.target_path.exists() {
             std::fs::rename(&source.target_path, &temporary_path)
                 .map_err(|e| AppError::RenameSubvolumeError {
