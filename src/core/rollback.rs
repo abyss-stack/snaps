@@ -108,7 +108,6 @@ pub fn run_rollback(recipe: &Recipe, prefix: &str) -> AppResult<()> {
                     what: e.to_string(),
                 })?;
         }
-        
     }
 
     AppMessage::RollbackDone.emit();
