@@ -67,7 +67,6 @@ pub fn rollback(recipe: &Recipe, prefix: &str) -> AppResult<()> {
             Ok(())
         })?;
 
-
     for source in sources {
         let temporary_name = format!("{}.tmp", source.subvolume);
         let temporary_path = bottom_path.join(&temporary_name);
