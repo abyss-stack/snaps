@@ -61,5 +61,7 @@ pub fn deploy_snapshots(recipe: &Recipe, prefix: &str) -> AppResult<()> {
             })?;
     }
 
+    AppMessage::DeploymentDone.emit();
+
     Ok(())
 } 

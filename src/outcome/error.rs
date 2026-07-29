@@ -45,12 +45,31 @@ pub enum AppError {
     CreateSnapshotError {
         what:String,
     },
-    
     SnapshotsDirOpenError {
         path: PathBuf,
         what: String,
     },
 
+    /* rollback */
+    NoLayoutForRollback,
+    SourceSubvolumeNotFound {
+        subvolume: String,
+    },
+    // CreateCStringError {...},
+    // OpenSubvolError {...},
+    RenameSubvolumeError {
+        subvolume: String,
+        what: String,
+    },
+    BottomDirOpenError {
+        path: PathBuf,
+        what: String,
+    },
+    // CreateSnapshotError {...},
+    DeleteSnapshotError {
+        subvolume: String,
+        what: String,
+    },
 }
 
 impl AppError {

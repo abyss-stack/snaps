@@ -34,6 +34,14 @@ pub enum AppMessage {
 
     /* deploy */
     DeployingSnapshots,
+    DeploymentDone,
+
+    /* rollback */
+    RollingBack {
+        prefix: String,
+    },
+    RollbackDone,
+    
 }
 
 impl AppMessage {
