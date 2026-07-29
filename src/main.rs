@@ -8,15 +8,18 @@ mod outcome;
 
 use std::process::ExitCode;
 use std::path::Path;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use clap::Parser;
 use nix::unistd::getuid;
 
-use crate::core::fstab::burn_fstab;
 use crate::outcome::{AppError, AppMessage, AppResult};
 use crate::cli::{AppArgs, Commands};
 use crate::core::recipe::Recipe;
 use crate::core::flags::toggle_rdonly_flag;
+use crate::core::fstab::{brew_fstab, burn_fstab};
+use crate::core::deploy::deploy_snapshots;
+use crate::core::rollback::run_rollback;
 
 fn main() -> ExitCode {
     match run() {
@@ -36,15 +39,12 @@ fn run() -> AppResult<()> {
         Commands::BurnFstab {
             content, // Fstab content.
             target, // A bootable subvolume.
-            fstab_path, // Relative, default to "etc/fstab".
             set_rdonly // To leave the subvolume read-only after burning.
         } => {
-            if !getuid().is_root() {
-                return Err(AppError::RootRequired);
-            }
-
+            ensure_root()?;
+            
             // INTENTIONAL: Relative path moved here and can`t be used anymore.
-            let fstab_full_path = target.join(fstab_path);
+            let fstab_full_path = target.join(&args.fstab_path);
 
             // NOTE: Ensure target is read-write before burning fstab.
             toggle_rdonly_flag(&target, false)?;
@@ -54,11 +54,119 @@ fn run() -> AppResult<()> {
             if set_rdonly {
                 toggle_rdonly_flag(&target, true)?;
             }
+        },
+        Commands::Deploy { prefix } => {
+            ensure_root()?;
+
+            let prefix = match prefix {
+                Some(prefix_value) => prefix_value,
+                None => {
+                    let nanos = SystemTime::now()
+                        .duration_since(UNIX_EPOCH)
+                        .unwrap_or_default()
+                        .as_nanos();
+
+                    format!("{:08x}", crc32fast::hash(&nanos.to_le_bytes()))
+                }
+            };
+
+            AppMessage::UsingPrefix {
+                prefix: prefix.clone()
+            }.emit();
+
+            let recipe = Recipe::load(Path::new(&args.recipe))?;
+
+            // NOTE: Pass Some() for prefix as we are brewing a snapshot fstab.
+            let fstab_content = brew_fstab(&recipe, Some(&prefix));
+
+            let layout = match &recipe.btrfs_layout {
+                Some(layout_value) => layout_value,
+                None => {
+                    // NOTE: Emit the fstab to stdout if the recipe has no btrfs_layout.
+                    emit_fstab(&fstab_content);
+                    return Ok(())
+                }
+            };
+
+            deploy_snapshots(&recipe, &prefix)?;
+
+            let bootable = match &layout.bootable {
+                Some(bootable_value) => bootable_value,
+                None => {
+                    // NOTE: Emit the fstab to stdout if no bootable provided.
+                    emit_fstab(&fstab_content);
+                    return Ok(())
+                }
+            };
+
+            let bootable_subvolume = format!("{}.{}", prefix, bootable);
+            
+            let bottom_path = &layout.bottom;
+            let snapshots_path = bottom_path.join(&layout.snapshots);
+            let bootable_path = snapshots_path.join(&bootable_subvolume);
+            let fstab_path = bootable_path.join(&args.fstab_path);
+
+            if args.fstab_stdout {
+                emit_fstab(&fstab_content);
+            }
+            else {
+                toggle_rdonly_flag(&bootable_path, false)?;
+                burn_fstab(fstab_path, &fstab_content)?;
+                toggle_rdonly_flag(&bootable_path, true)?;
+            }
+        },
+        Commands::Rollback { prefix } => {
+            ensure_root()?;
+
+            AppMessage::UsingPrefix {
+                prefix: prefix.clone(),
+            }.emit();
+
+            let recipe = Recipe::load(Path::new(&args.recipe))?;
+
+            run_rollback(&recipe, &prefix)?;
+
+            // UNWRAP: If this line runs, btrfs_layout is Some().
+            let layout = recipe.btrfs_layout.as_ref().unwrap();
+
+            // NOTE: Pass None for prefix, because we are brewing fstab for a main system.
+            let fstab_content = brew_fstab(&recipe, None);
+            
+            let bootable = match &layout.bootable {
+                Some(bootable_value) => bootable_value,
+                None => {
+                    // NOTE: Emit the fstab to stdout if no bootable provided.
+                    emit_fstab(&fstab_content);
+                    return Ok(())
+                }
+            };
+            
+            let bottom_path = &layout.bottom;
+            let snapshots_path = bottom_path.join(&layout.snapshots);
+            let bootable_path = snapshots_path.join(&bootable);
+            let fstab_path = bootable_path.join(&args.fstab_path);
+
+            if !args.fstab_stdout {
+                toggle_rdonly_flag(&bootable_path, false)?;
+                burn_fstab(fstab_path, &fstab_content)?;
+            }
+            else {
+                emit_fstab(&fstab_content);
+            }
         }
-        
-        
-        _=>{}/////
     }
     Ok(())
 }
 
+// Helper functions.
+
+fn ensure_root() -> AppResult<()> {
+    if getuid().is_root() { Ok(()) } else { Err(AppError::RootRequired) }     
+}
+
+fn emit_fstab(fstab_content: &str) {
+    println!("{}", fstab_content);
+    AppMessage::FstabEmitted {
+        len: fstab_content.len()
+    }.emit();
+}

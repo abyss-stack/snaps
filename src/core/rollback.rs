@@ -15,7 +15,7 @@ struct RollbackSource {
     target_path: PathBuf,
 }
 
-pub fn rollback(recipe: &Recipe, prefix: &str) -> AppResult<()> {
+pub fn run_rollback(recipe: &Recipe, prefix: &str) -> AppResult<()> {
     AppMessage::RollingBack {
         prefix: prefix.to_string(),
     }.emit();

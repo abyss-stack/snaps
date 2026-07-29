@@ -41,6 +41,14 @@ pub enum AppMessage {
         prefix: String,
     },
     RollbackDone,
+
+    /* main */
+    UsingPrefix {
+        prefix: String,
+    },
+    FstabEmitted {
+        len: usize,
+    },
     
 }
 

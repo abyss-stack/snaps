@@ -12,10 +12,6 @@ pub enum Commands {
         #[arg(long)]
         target: PathBuf,
 
-        // Relative fstab path.
-        #[arg(long, default_value = "etc/fstab")]
-        fstab_path: String,
-
         // To leave target subvolume read-only.
         #[arg(long)]
         set_rdonly: bool,
@@ -35,6 +31,10 @@ pub enum Commands {
 pub struct AppArgs {
     #[arg(long, default_value = "/etc/abyss-snaps/recipe.json")]
     pub recipe: PathBuf,
+
+    // Relative fstab path.
+    #[arg(long, default_value = "etc/fstab")]
+    pub fstab_path: String,
 
     #[arg(long, help = "Print fstab to stdout.")]
     pub fstab_stdout: bool,
