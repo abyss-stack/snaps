@@ -30,7 +30,7 @@ pub fn rollback(recipe: &Recipe, prefix: &str) -> AppResult<()> {
     let snapshots_path = bottom_path.join(&layout.snapshots);
 
     let bottom_file = File::open(bottom_path).map_err(|e| AppError::BottomDirOpenError {
-        path: snapshots_path.to_path_buf(),
+        path: bottom_path.to_path_buf(),
         what: e.to_string(),
     })?;
     
