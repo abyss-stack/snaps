@@ -31,6 +31,9 @@ pub enum AppMessage {
         count: usize,
     },
     FstabBrewed,
+
+    /* deploy */
+    DeployingSnapshots,
 }
 
 impl AppMessage {

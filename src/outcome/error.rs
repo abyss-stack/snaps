@@ -33,6 +33,24 @@ pub enum AppError {
         what: String,
     },
 
+    /* deploy */
+    NoLayoutToDeploy,
+    PrefixCollision {
+        prefix: String,
+    },
+    // OpenSubvolError {...},
+    CreateCStringError {
+        what: String,
+    },
+    CreateSnapshotError {
+        what:String,
+    },
+    
+    SnapshotsDirOpenError {
+        path: PathBuf,
+        what: String,
+    },
+
 }
 
 impl AppError {
