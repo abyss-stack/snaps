@@ -7,7 +7,16 @@ pub enum Commands {
     BurnFstab {
         #[arg(long)]
         content: String,
-        
+
+        // Full path to a bootable subvolume. 
+        #[arg(long)]
+        target: PathBuf,
+
+        // Relative fstab path.
+        #[arg(long, default_value = "etc/fstab")]
+        fstab_path: String,
+
+        // To leave target subvolume read-only.
         #[arg(long)]
         set_rdonly: bool,
     },

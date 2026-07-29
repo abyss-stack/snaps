@@ -70,6 +70,10 @@ pub enum AppError {
         subvolume: String,
         what: String,
     },
+
+    /* main */
+    RootRequired,
+    NoLayoutForFstab,
 }
 
 impl AppError {
