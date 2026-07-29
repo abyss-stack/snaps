@@ -1,7 +1,6 @@
 use std::ffi::CString;
 use std::fs::File;
 use std::os::fd::AsFd;
-use std::path::PathBuf;
 
 use crate::outcome::{AppError, AppMessage, AppResult};
 use crate::core::recipe::Recipe;

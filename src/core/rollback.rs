@@ -10,7 +10,6 @@ use crate::core::recipe::Recipe;
 struct RollbackSource {
     c_name: CString,
     subvolume: String,
-    snapshot_name: String,
     source_path: PathBuf,
     target_path: PathBuf,
 }
@@ -59,7 +58,6 @@ pub fn run_rollback(recipe: &Recipe, prefix: &str) -> AppResult<()> {
             sources.push(RollbackSource {
                 c_name,
                 subvolume: entry.subvol.clone(),
-                snapshot_name,
                 source_path,
                 target_path,
             });
