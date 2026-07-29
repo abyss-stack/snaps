@@ -54,8 +54,6 @@ pub fn brew_fstab(recipe: &Recipe, prefix: Option<&str>) -> String {
     };
     
     recipe.btrfs_entries.iter().for_each(|entry| {
-        let is_tracked = layout.tracked_set.contains(&entry.subvol);
-
         let _ = write!(&mut buffer, "{}\t{}\tbtrfs\t", layout.device, entry.mountpoint);
 
         layout.options.iter().for_each(|opt| {
@@ -63,7 +61,7 @@ pub fn brew_fstab(recipe: &Recipe, prefix: Option<&str>) -> String {
         });
 
         // NOTE: Route to the snapshot if the subvolume is tracked and a prefix is provided.
-        match (prefix, is_tracked) {
+        match (prefix, layout.tracked_set.contains(&entry.subvol)) {
             (Some(prefix_value), true) => {
                 let _ = write!(&mut buffer, "subvol={}/{}.{}", layout.snapshots, prefix_value, entry.subvol);
             },
