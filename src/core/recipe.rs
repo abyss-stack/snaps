@@ -10,7 +10,6 @@ pub struct BtrfsLayout {
     pub bottom: PathBuf,
     pub snapshots: String,
     pub bootable: Option<String>,
-    pub fstab: Option<String>,
     pub options: Vec<String>,
     pub bottom_options: Vec<String>,
     pub tracked: Vec<String>,
