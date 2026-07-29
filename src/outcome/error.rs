@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "fail", rename = "snake_case")]
+#[serde(tag = "fail", rename_all = "snake_case")]
 pub enum AppError {
     /* flags */
     OpenSubvolError {

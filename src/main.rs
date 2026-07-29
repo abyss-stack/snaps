@@ -143,8 +143,7 @@ fn run() -> AppResult<()> {
             };
             
             let bottom_path = &layout.bottom;
-            let snapshots_path = bottom_path.join(&layout.snapshots);
-            let bootable_path = snapshots_path.join(bootable);
+            let bootable_path = bottom_path.join(bootable);
             let fstab_path = bootable_path.join(&args.fstab_path);
 
             if !args.fstab_stdout {
