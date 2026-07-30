@@ -93,7 +93,6 @@ fn run() -> AppResult<()> {
             let bootable = match &layout.bootable {
                 Some(bootable_value) => bootable_value,
                 None => {
-                    // NOTE: Emit the fstab to stdout if no bootable provided.
                     emit_fstab(&fstab_content);
                     return Ok(())
                 }
@@ -126,17 +125,15 @@ fn run() -> AppResult<()> {
 
             run_rollback(&recipe, &prefix)?;
 
-            let Some(layout) = &recipe.btrfs_layout else {
-                return Err(AppError::NoLayoutForRollback);
-            };
-
             // NOTE: Pass None for prefix, because we are brewing fstab for a main system.
             let fstab_content = brew_fstab(&recipe, None);
             
+            #[allow(clippy::expect_used, reason = "Btrfs layout is already verified.")]
+            let layout = recipe.btrfs_layout.as_ref().expect("btrfs_layout_missing");
+
             let bootable = match &layout.bootable {
                 Some(bootable_value) => bootable_value,
                 None => {
-                    // NOTE: Emit the fstab to stdout if no bootable provided.
                     emit_fstab(&fstab_content);
                     return Ok(())
                 }
@@ -145,20 +142,18 @@ fn run() -> AppResult<()> {
             let bottom_path = &layout.bottom;
             let bootable_path = bottom_path.join(bootable);
             let fstab_path = bootable_path.join(&args.fstab_path);
-
-            if !args.fstab_stdout {
-                toggle_rdonly_flag(&bootable_path, false)?;
-                burn_fstab(fstab_path, &fstab_content)?;
+            
+            if args.fstab_stdout {
+                emit_fstab(&fstab_content);
             }
             else {
-                emit_fstab(&fstab_content);
+                toggle_rdonly_flag(&bootable_path, false)?;
+                burn_fstab(fstab_path, &fstab_content)?;
             }
         }
     }
     Ok(())
 }
-
-// Helper functions.
 
 fn ensure_root() -> AppResult<()> {
     if getuid().is_root() { Ok(()) } else { Err(AppError::RootRequired) }     

@@ -47,17 +47,21 @@ pub fn deploy_snapshots(recipe: &Recipe, prefix: &str) -> AppResult<()> {
             Ok(())
         })?;
 
-    let snapshots_file = File::open(&snapshots_path)
-        .map_err(|e| AppError::SnapshotsDirOpenError {
-            path: snapshots_path.clone(),
-            what: e.to_string(),
+    let snapshots_file = File::open(&snapshots_path).map_err(|e| AppError::SnapshotsDirOpenError {
+        path: snapshots_path.clone(),
+        what: e.to_string(),
     })?;
 
     for (c_name, file) in sources {
-        btrfs_uapi::subvolume::snapshot_create(snapshots_file.as_fd(), file.as_fd(), &c_name, true, &[])
-            .map_err(|e| AppError::CreateSnapshotError {
-                what: e.to_string(),
-            })?;
+        btrfs_uapi::subvolume::snapshot_create(
+            snapshots_file.as_fd(),
+            file.as_fd(),
+            &c_name,
+            true,
+            &[]
+        ).map_err(|e| AppError::CreateSnapshotError {
+            what: e.to_string(),
+        })?;
     }
 
     AppMessage::DeploymentDone.emit();

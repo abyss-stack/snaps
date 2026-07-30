@@ -102,11 +102,13 @@ pub fn run_rollback(recipe: &Recipe, prefix: &str) -> AppResult<()> {
                     what: e.to_string(),
                 })?;
 
-            btrfs_uapi::subvolume::subvolume_delete(bottom_file.as_fd(), &temporary_c_name)
-                .map_err(|e| AppError::DeleteSnapshotError {
-                    subvolume: temporary_name,
-                    what: e.to_string(),
-                })?;
+            btrfs_uapi::subvolume::subvolume_delete(
+                bottom_file.as_fd(),
+                &temporary_c_name
+            ).map_err(|e| AppError::DeleteSnapshotError {
+                subvolume: temporary_name,
+                what: e.to_string(),
+            })?;
         }
     }
 
