@@ -79,6 +79,7 @@ fn run() -> AppResult<()> {
             // NOTE: Pass Some() for prefix as we are brewing a snapshot fstab.
             let fstab_content = brew_fstab(&recipe, Some(&prefix));
 
+            // INTENTIONAL: For non-btrfs recipes just brew fstab and emit it.
             let layout = match &recipe.btrfs_layout {
                 Some(layout_value) => layout_value,
                 None => {
