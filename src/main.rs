@@ -82,7 +82,6 @@ fn run() -> AppResult<()> {
             let layout = match &recipe.btrfs_layout {
                 Some(layout_value) => layout_value,
                 None => {
-                    // NOTE: Emit the fstab to stdout if the recipe has no btrfs_layout.
                     emit_fstab(&fstab_content);
                     return Ok(())
                 }
