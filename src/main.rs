@@ -13,13 +13,13 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use clap::Parser;
 use nix::unistd::getuid;
 
-use crate::outcome::{AppError, AppMessage, AppResult};
-use crate::cli::{AppArgs, Commands};
-use crate::core::recipe::Recipe;
-use crate::core::flags::toggle_rdonly_flag;
-use crate::core::fstab::{brew_fstab, burn_fstab};
-use crate::core::deploy::deploy_snapshots;
-use crate::core::rollback::run_rollback;
+use outcome::{AppError, AppMessage, AppResult};
+use cli::{AppArgs, Commands};
+use core::recipe::Recipe;
+use core::flags::toggle_rdonly_flag;
+use core::fstab::{brew_fstab, burn_fstab};
+use core::deploy::deploy_snapshots;
+use core::rollback::run_rollback;
 
 fn main() -> ExitCode {
     match run() {
