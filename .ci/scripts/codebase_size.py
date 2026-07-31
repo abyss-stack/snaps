@@ -118,7 +118,6 @@ def main():
                 "bytes": file_bytes
             }
             logger.info("Parsed file", file=str(relative_path), loc=codelines, bytes=file_bytes)
-    
 
     sorted_metrics = dict(
         sorted(metrics.items(), key=lambda item: item[1]["loc"], reverse=True)
