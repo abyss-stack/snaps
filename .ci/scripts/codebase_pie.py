@@ -24,6 +24,8 @@ def main():
     if not metrics:
         return
 
+    output_path = sys.argv[1] if len(sys.argv) > 1 else "codebase_size.png"
+
     items = list(metrics.items())
     top, rest = items[:MAX], items[MAX:]
     labels = [lbl for lbl, _ in top]
@@ -66,7 +68,7 @@ def main():
         y -= step
 
     plt.subplots_adjust(left=0.03, right=0.97, top=0.95, bottom=0.05)
-    plt.savefig("codebase_size.png", dpi=150, bbox_inches="tight", transparent=True)
+    plt.savefig(output_path, dpi=150, bbox_inches="tight", transparent=True)
     plt.close()
 
 if __name__ == "__main__":
