@@ -43,13 +43,12 @@ fn run() -> AppResult<()> {
         } => {
             ensure_root()?;
             
-            // INTENTIONAL: Relative path moved here and can`t be used anymore.
-            let fstab_full_path = target.join(&args.fstab_path);
+            let fstab_path = target.join(&args.fstab_path);
 
             // NOTE: Ensure target is read-write before burning fstab.
             toggle_rdonly_flag(&target, false)?;
 
-            burn_fstab(&fstab_full_path, &content)?;
+            burn_fstab(&fstab_path, &content)?;
 
             if set_rdonly {
                 toggle_rdonly_flag(&target, true)?;
