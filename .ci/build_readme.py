@@ -21,7 +21,7 @@ def update_readme(readme_path: Path, version: str):
         "## Installation\n\n"
         "Install the pre-compiled static binary:\n\n"
         "```sh\n"
-        f"sudo curl -L -o /usr/local/bin/abyss-snaps https://github.com/abyss-stack/snaps/releases/download/{version}/abyss-snaps \\\n"
+        f"sudo curl -L -o /usr/local/bin/abyss-snaps https://github.com/abyss-stack/snaps/releases/download/v{version}/abyss-snaps \\\n"
         "  && sudo chmod +x /usr/local/bin/abyss-snaps\n"
         "```\n\n"
         "Verify the installation:\n"

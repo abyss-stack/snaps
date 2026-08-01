@@ -18,7 +18,7 @@ A filesystem state machine and orchestrator for Btrfs.
 Install the pre-compiled static binary:
 
 ```sh
-sudo curl -L -o /usr/local/bin/abyss-snaps https://github.com/abyss-stack/snaps/releases/download/2026.08.01/abyss-snaps \
+sudo curl -L -o /usr/local/bin/abyss-snaps https://github.com/abyss-stack/snaps/releases/download/v2026.08.01/abyss-snaps \
   && sudo chmod +x /usr/local/bin/abyss-snaps
 ```
 
