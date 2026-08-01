@@ -10,8 +10,8 @@ use crate::core::recipe::Recipe;
 struct RollbackSource {
     c_name: CString,
     subvolume: String,
-    source_path: PathBuf,
     target_path: PathBuf,
+    snapshot_file: File,
 }
 
 pub fn run_rollback(recipe: &Recipe, prefix: &str) -> AppResult<()> {
@@ -54,12 +54,17 @@ pub fn run_rollback(recipe: &Recipe, prefix: &str) -> AppResult<()> {
                 .map_err(|e| AppError::CreateCStringError {
                     what: e.to_string(),
                 })?;
+
+            let snapshot_file = File::open(&source_path).map_err(|e| AppError::OpenSubvolError {
+                path: source_path.clone(),
+                what: e.to_string(),
+            })?;
             
             sources.push(RollbackSource {
                 c_name,
                 subvolume: entry.subvol.clone(),
-                source_path,
                 target_path,
+                snapshot_file,
             });
             
             Ok(())
@@ -79,15 +84,10 @@ pub fn run_rollback(recipe: &Recipe, prefix: &str) -> AppResult<()> {
                 })?;
         }
 
-        let snapshot_file = File::open(&source.source_path).map_err(|e| AppError::OpenSubvolError {
-            path: source.source_path.clone(),
-            what: e.to_string(),
-        })?;
-
         // EXAMPLE: creating read-write '@home' from 'prefix.@home'.
         btrfs_uapi::subvolume::snapshot_create(
             bottom_file.as_fd(),
-            snapshot_file.as_fd(),
+            source.snapshot_file.as_fd(),
             &source.c_name,
             false,
         &[]
