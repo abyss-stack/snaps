@@ -1,5 +1,5 @@
 fn main() {
-    if std::env::var("PROJECT_VERSION").is_err() {
-        println!("cargo:rustc-env=PROJECT_VERSION=0.0.0-0");
+    if std::env::var("VERSION").is_err() {
+        println!("cargo:rustc-env=VERSION=0.0.0-0");
     }
 }
