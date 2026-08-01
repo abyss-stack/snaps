@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ARG TARGET=x86_64-unknown-linux-musl
 
 RUN rustup target add $TARGET \
-    && rustup component add clippy \
-    && cargo install tokei --version 14.0.0 --features all --root /usr/local
+    && rustup component add clippy
+    # && cargo install tokei --version 14.0.0 --features all --root /usr/local
 
 WORKDIR /app
 
@@ -28,8 +28,7 @@ ENV VERSION=$VERSION \
 COPY src/ src/
 COPY template.json ./
 
-RUN tokei ./src -o json > /app/codebase.json
-
+# RUN tokei ./src -o json > /app/codebase.json
 RUN cargo clippy --target $TARGET --all-targets --locked -- -D warnings \
     && cargo build --release --target $TARGET --locked \
     && strip /app/target/$TARGET/release/abyss-snaps \
@@ -37,4 +36,4 @@ RUN cargo clippy --target $TARGET --all-targets --locked -- -D warnings \
 
 FROM scratch AS exporter
 COPY --from=builder /app/abyss-snaps /
-COPY --from=builder /app/codebase.json /
+# COPY --from=builder /app/codebase.json /
