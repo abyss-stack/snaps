@@ -18,7 +18,7 @@
     {
       "device": "LABEL=efi",
       "mountpoint": "/boot/efi",
-      "fs": "vfat",
+      "fstype": "vfat",
       "options": ["defaults"],
       "dump": 0,
       "pass": 0
