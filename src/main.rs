@@ -6,20 +6,20 @@ mod cli;
 mod core;
 mod outcome;
 
-use std::process::ExitCode;
 use std::path::Path;
+use std::process::ExitCode;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use clap::Parser;
 use nix::unistd::getuid;
 
-use outcome::{AppError, AppMessage, AppResult};
 use cli::{AppArgs, Commands};
-use core::recipe::Recipe;
+use core::deploy::deploy_snapshots;
 use core::flags::toggle_rdonly_flag;
 use core::fstab::{brew_fstab, burn_fstab};
-use core::deploy::deploy_snapshots;
+use core::recipe::Recipe;
 use core::rollback::run_rollback;
+use outcome::{AppError, AppMessage, AppResult};
 
 fn main() -> ExitCode {
     match run() {
@@ -36,13 +36,23 @@ fn run() -> AppResult<()> {
 
     match args.command {
         Commands::RecipeTemplate => println!("{}", Recipe::TEMPLATE),
+        Commands::BrewFstab { prefix } => {
+            let recipe = Recipe::load(Path::new(&args.recipe))?;
+
+            let fstab_content = match prefix {
+                Some(prefix_value) => brew_fstab(&recipe, Some(&prefix_value)),
+                None => brew_fstab(&recipe, None),
+            };
+
+            emit_fstab(&fstab_content);
+        }
         Commands::BurnFstab {
-            content, // Fstab content.
-            target, // A bootable subvolume.
-            set_rdonly // To leave the subvolume read-only after burning.
+            content,    // Fstab content.
+            target,     // A bootable subvolume.
+            set_rdonly, // To leave the subvolume read-only after burning.
         } => {
             ensure_root()?;
-            
+
             let fstab_path = target.join(&args.fstab_path);
 
             // NOTE: Ensure target is read-write before burning fstab.
@@ -53,7 +63,7 @@ fn run() -> AppResult<()> {
             if set_rdonly {
                 toggle_rdonly_flag(&target, true)?;
             }
-        },
+        }
         Commands::Deploy { prefix } => {
             ensure_root()?;
 
@@ -70,8 +80,9 @@ fn run() -> AppResult<()> {
             };
 
             AppMessage::UsingPrefix {
-                prefix: prefix.clone()
-            }.emit();
+                prefix: prefix.clone(),
+            }
+            .emit();
 
             let recipe = Recipe::load(Path::new(&args.recipe))?;
 
@@ -83,7 +94,7 @@ fn run() -> AppResult<()> {
                 Some(layout_value) => layout_value,
                 None => {
                     emit_fstab(&fstab_content);
-                    return Ok(())
+                    return Ok(());
                 }
             };
 
@@ -93,12 +104,12 @@ fn run() -> AppResult<()> {
                 Some(bootable_value) => bootable_value,
                 None => {
                     emit_fstab(&fstab_content);
-                    return Ok(())
+                    return Ok(());
                 }
             };
 
             let bootable_subvolume = format!("{}.{}", prefix, bootable);
-            
+
             let bottom_path = &layout.bottom;
             let snapshots_path = bottom_path.join(&layout.snapshots);
             let bootable_path = snapshots_path.join(&bootable_subvolume);
@@ -106,19 +117,19 @@ fn run() -> AppResult<()> {
 
             if args.fstab_stdout {
                 emit_fstab(&fstab_content);
-            }
-            else {
+            } else {
                 toggle_rdonly_flag(&bootable_path, false)?;
                 burn_fstab(fstab_path, &fstab_content)?;
                 toggle_rdonly_flag(&bootable_path, true)?;
             }
-        },
+        }
         Commands::Rollback { prefix } => {
             ensure_root()?;
 
             AppMessage::UsingPrefix {
                 prefix: prefix.clone(),
-            }.emit();
+            }
+            .emit();
 
             let recipe = Recipe::load(Path::new(&args.recipe))?;
 
@@ -126,7 +137,7 @@ fn run() -> AppResult<()> {
 
             // NOTE: Pass None for prefix, because we are brewing fstab for a main system.
             let fstab_content = brew_fstab(&recipe, None);
-            
+
             #[allow(clippy::expect_used, reason = "Btrfs layout is already verified.")]
             let layout = recipe.btrfs_layout.as_ref().expect("btrfs_layout_missing");
 
@@ -134,18 +145,17 @@ fn run() -> AppResult<()> {
                 Some(bootable_value) => bootable_value,
                 None => {
                     emit_fstab(&fstab_content);
-                    return Ok(())
+                    return Ok(());
                 }
             };
-            
+
             let bottom_path = &layout.bottom;
             let bootable_path = bottom_path.join(bootable);
             let fstab_path = bootable_path.join(&args.fstab_path);
-            
+
             if args.fstab_stdout {
                 emit_fstab(&fstab_content);
-            }
-            else {
+            } else {
                 toggle_rdonly_flag(&bootable_path, false)?;
                 burn_fstab(fstab_path, &fstab_content)?;
             }
@@ -155,12 +165,17 @@ fn run() -> AppResult<()> {
 }
 
 fn ensure_root() -> AppResult<()> {
-    if getuid().is_root() { Ok(()) } else { Err(AppError::RootRequired) }     
+    if getuid().is_root() {
+        Ok(())
+    } else {
+        Err(AppError::RootRequired)
+    }
 }
 
 fn emit_fstab(fstab_content: &str) {
     println!("{}", fstab_content);
     AppMessage::FstabEmitted {
-        len: fstab_content.len()
-    }.emit();
+        len: fstab_content.len(),
+    }
+    .emit();
 }

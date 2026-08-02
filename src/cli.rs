@@ -4,11 +4,15 @@ use std::path::PathBuf;
 #[derive(Subcommand)]
 pub enum Commands {
     RecipeTemplate,
+    BrewFstab {
+        #[arg(long)]
+        prefix: Option<String>,
+    },
     BurnFstab {
         #[arg(long)]
         content: String,
 
-        // Full path to a bootable subvolume. 
+        // Full path to a bootable subvolume.
         #[arg(long)]
         target: PathBuf,
 
