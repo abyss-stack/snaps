@@ -17,16 +17,18 @@ def update_readme(readme_path: Path, version: str):
     if start_m not in text or end_m not in text:
         sys.exit(1)
 
+    project = "snaps"
+    
     install_block = (
         "## Installation\n\n"
         "Install the pre-compiled static binary:\n\n"
         "```sh\n"
-        f"sudo curl -L -o /usr/local/bin/abyss-snaps https://github.com/abyss-stack/snaps/releases/download/v{version}/abyss-snaps \\\n"
-        "  && sudo chmod +x /usr/local/bin/abyss-snaps\n"
+        f"sudo curl -L -o /usr/local/bin/abyss-{project} https://github.com/abyss-stack/{project}/releases/download/v{version}/abyss-{project} \\\n"
+        f"  && sudo chmod +x /usr/local/bin/abyss-{project}\n"
         "```\n\n"
         "Verify the installation:\n"
         "```sh\n"
-        "abyss-snaps --version\n"
+        f"abyss-{project} --version\n"
         "```"
     )
 
