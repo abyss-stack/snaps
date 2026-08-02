@@ -10,7 +10,8 @@ pub enum Commands {
     },
     BurnFstab {
         #[arg(long)]
-        content: String,
+        // INTENTIONAL: Using raw input string is pain.
+        source: PathBuf,
 
         // Full path to a bootable subvolume.
         #[arg(long)]

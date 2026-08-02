@@ -47,12 +47,17 @@ fn run() -> AppResult<()> {
             emit_fstab(&fstab_content);
         }
         Commands::BurnFstab {
-            content,    // Fstab content.
+            source,    // Fstab content path.
             target,     // A bootable subvolume.
             set_rdonly, // To leave the subvolume read-only after burning.
         } => {
             ensure_root()?;
 
+            let content = std::fs::read_to_string(&source)
+                .map_err(|e| AppError::FstabSourceReadError {
+                    what: e.to_string(),
+                })?;
+            
             let fstab_path = target.join(&args.fstab_path);
 
             // NOTE: Ensure target is read-write before burning fstab.

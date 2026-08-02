@@ -74,6 +74,9 @@ pub enum AppError {
     /* main */
     RootRequired,
     NoLayoutForFstab,
+    FstabSourceReadError {
+        what: String,
+    },
 }
 
 impl AppError {
