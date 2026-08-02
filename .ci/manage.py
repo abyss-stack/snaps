@@ -2,8 +2,8 @@
 # /// script
 # requires-python = "==3.12.*"
 # dependencies = [
-#   "click==8.1.8",
-#   "sh==2.2.2",
+# "click==8.1.8",
+# "sh==2.2.2",
 # ]
 # ///
 import json
@@ -30,19 +30,6 @@ def load_config() -> dict:
     return json.loads(CONFIG_PATH.read_text())
 
 
-def run(cmd, *args, **kwargs):
-    """Run a sh command; exit on non-zero status.
-    Uses _fg when no other special arguments are present.
-    """
-    try:
-        if kwargs:
-            cmd(*args, **kwargs)
-        else:
-            cmd(*args, _fg=True)
-    except sh.ErrorReturnCode as e:
-        sys.exit(e.exit_code)
-
-
 @click.group()
 def cli():
     pass
@@ -66,12 +53,10 @@ def build(no_cache: bool):
         args.insert(0, "--no-cache")
 
     with chdir(PROJECT_ROOT):
-        run(sh.docker.buildx.build, *args)
+        sh.docker.buildx.build(*args, _fg=True)
 
     if README_SCRIPT.exists():
-        # _in cannot be combined with _fg
-        run(
-            sh.Command(str(README_SCRIPT)),
+        sh.Command(str(README_SCRIPT))(
             _in=version,
             _out=sys.stdout,
             _err=sys.stderr,
@@ -90,15 +75,13 @@ def release(push: bool):
     commit_msg = f"deploy-{timestamp}"
 
     with chdir(PROJECT_ROOT):
-        run(sh.git.add, ".")
-        run(sh.git.commit, "-m", commit_msg, "--allow-empty")
-
+        sh.git.add(".", _fg=True)
+        sh.git.commit("-m", commit_msg, "--allow-empty", _fg=True)
         if push:
-            run(sh.git.push, remote, branch, "--force")
-
-        run(sh.git.tag, "-a", tag, "-m", f"Release {tag}", "--force")
+            sh.git.push(remote, branch, "--force", _fg=True)
+        sh.git.tag("-a", tag, "-m", f"Release {tag}", "--force", _fg=True)
         if push:
-            run(sh.git.push, remote, tag, "--force")
+            sh.git.push(remote, tag, "--force", _fg=True)
 
     if not BINARY_PATH.exists():
         sys.exit(1)
@@ -108,14 +91,20 @@ def release(push: bool):
 
     if sh.which("gh"):
         try:
-            run(sh.gh.release.create, tag, str(BINARY_PATH),
-                "--title", title, "--notes", notes)
-        except SystemExit:
-            run(sh.gh.release.upload, tag, str(BINARY_PATH), "--clobber")
-            run(sh.gh.release.edit, tag, "--title", title)
+            sh.gh.release.create(
+                tag, str(BINARY_PATH),
+                "--title", title, "--notes", notes,
+                _fg=True,
+            )
+        except sh.ErrorReturnCode:
+            sh.gh.release.upload(tag, str(BINARY_PATH), "--clobber", _fg=True)
+            sh.gh.release.edit(tag, "--title", title, _fg=True)
     elif sh.which("glab"):
-        run(sh.glab.release.create, tag, str(BINARY_PATH),
-            "--name", title, "--notes", notes, "--overwrite")
+        sh.glab.release.create(
+            tag, str(BINARY_PATH),
+            "--name", title, "--notes", notes, "--overwrite",
+            _fg=True,
+        )
 
 
 if __name__ == "__main__":
